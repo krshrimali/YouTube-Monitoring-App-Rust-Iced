@@ -1,18 +1,23 @@
 use iced::theme::{self, Theme};
-use iced::widget::{column, container, radio, row, text};
+use iced::widget::{column, container, radio, row, text, Row};
 use iced::{Color, Length, Sandbox, Settings};
 
 pub fn main() -> iced::Result {
     Styling::run(Settings::default())
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default, Clone)]
 struct Card {
     first_name: String,
     last_name: String,
     age: i32,
     sex: char,
     description: String,
+}
+
+#[derive(Debug, Default)]
+struct ListOfCards {
+    cards: Vec<Card>
 }
 
 #[derive(Default)]
@@ -32,25 +37,45 @@ pub enum Message {
     ThemeChanged(ThemeType),
 }
 
+// FIXME: Not taking any arguments intentionally for now, once JSON reading is done
+// add arguments.
+fn create_list_of_cards() -> ListOfCards {
+    let first_names = vec!["Kushashwa", "Mohit", "Yatharth", "Vishwesh"];
+    let last_names = vec!["Shrimali", "Wankhade", "Wankhade", "Shrimali"];
+    let ages = vec![24, 24, 22, 26];
+    let genders = vec!['M', 'M', 'M', 'M'];
+    let description = "God Level";
+
+    let mut list_of_cards = ListOfCards::default();
+    for (first_name, last_name, age, gender) in itertools::izip!(first_names, last_names, ages, genders) {
+        let card = Card {
+            first_name: first_name.to_string(),
+            last_name: last_name.to_string(),
+            age,
+            sex: gender,
+            description: description.to_string(),
+        };
+
+        list_of_cards.cards.push(card);
+    };
+
+    list_of_cards
+}
+
 pub fn create_card(
-    first_name: String,
-    last_name: String,
-    age: i32,
-    sex: char,
-    description: String,
+    card: &Card,
 ) -> iced::Element<'static, Message> {
-    container(column![text(
-        "First Name: ".to_owned()
-            + &first_name
+    let container_text = "First Name: ".to_owned()
+            + &card.first_name
             + "\nLast Name: "
-            + &last_name
+            + &card.last_name
             + "\nAge: "
-            + &age.to_string()
+            + &card.age.to_string()
             + "\nSex: "
-            + &sex.to_string()
+            + &card.sex.to_string()
             + "\nDescription:\n"
-            + &description
-    )])
+            + &card.description;
+    container(column![text(container_text)])
     .into()
 }
 
@@ -114,32 +139,32 @@ impl Sandbox for Styling {
         //     vertical_rule(18),
         // ];
 
-        let card = create_card(
-            String::from("Kush"),
-            String::from("Shrimali"),
-            24,
-            'M',
-            String::from("I'm a developer..."),
-        );
+        // let card = create_card(
+        //     String::from("Kush"),
+        //     String::from("Shrimali"),
+        //     24,
+        //     'M',
+        //     String::from("I'm a developer..."),
+        // );
 
-        let second_card = create_card(
-            String::from("Kush"),
-            String::from("Shrimali"),
-            24,
-            'M',
-            String::from("I'm a developer..."),
-        );
+        // let second_card = create_card(
+        //     String::from("Kush"),
+        //     String::from("Shrimali"),
+        //     24,
+        //     'M',
+        //     String::from("I'm a developer..."),
+        // );
 
         // let content = column![choose_theme, horizontal_rule(38), card]
         let content = container(column![choose_theme].spacing(20).padding(20).max_width(600))
             .width(Length::Fill)
             .center_x();
 
-        let card_container_one = container(column![card].spacing(10).padding(20).max_width(600))
-            .style(theme::Container::Box);
+        // let card_container_one = container(column![card].spacing(10).padding(20).max_width(600))
+        //     .style(theme::Container::Box);
 
-        let card_container_two = container(column![second_card].spacing(10).padding(20).max_width(600))
-            .style(theme::Container::Box);
+        // let card_container_two = container(column![second_card].spacing(10).padding(20).max_width(600))
+        //     .style(theme::Container::Box);
 
         // Not using the following as I want to have 2 separate containers (header container + card container)
         // container(content, card_container)
@@ -147,7 +172,28 @@ impl Sandbox for Styling {
         //     .height(Length::Fill)
         //     .center_x()
         //     .into()
-        column![content, row![card_container_one, card_container_two].spacing(10)].into()
+
+        let all_cards = create_list_of_cards();
+        // let containers = all_cards.cards.iter().map(|each_card| {
+        //     container(column![create_card(each_card)].spacing(10).padding(20).max_width(600))
+        // }).into_iter();
+        // let mut cards_row = vec![];
+        // for _card_container in containers {
+        //     cards_row.push(_card_contaner);
+        // }
+
+        let mut containers = Vec::new();
+        for each_card in all_cards.cards.iter() {
+            containers.push(container(column![create_card(each_card)].spacing(10).padding(20).max_width(600)));
+        }
+
+        let mut cards_row = Vec::new();
+        for container in containers {
+          cards_row.push(container);
+        }
+        let row = Row::with_children(cards_row);
+
+        column![content, row.spacing(10)].into()
     }
 
     fn theme(&self) -> Theme {
