@@ -1,8 +1,5 @@
 use iced::theme::{self, Theme};
-use iced::widget::{
-    column, container, horizontal_rule, radio, row, text, vertical_rule,
-};
-use iced::{alignment, Element};
+use iced::widget::{column, container, radio, row, text};
 use iced::{Color, Length, Sandbox, Settings};
 
 pub fn main() -> iced::Result {
@@ -88,24 +85,23 @@ impl Sandbox for Styling {
     }
 
     fn view(&self) -> iced::Element<'_, Self::Message> {
-        let choose_theme =
-            [ThemeType::Dark, ThemeType::Light, ThemeType::Custom]
-                .iter()
-                .fold(
-                    column![text("Choose a theme:")].spacing(10),
-                    |column, theme| {
-                        column.push(radio(
-                            format!("{:?}", theme),
-                            *theme,
-                            Some(match self.theme {
-                                Theme::Dark => ThemeType::Dark,
-                                Theme::Light => ThemeType::Light,
-                                Theme::Custom { .. } => ThemeType::Custom,
-                            }),
-                            Message::ThemeChanged,
-                        ))
-                    },
-                );
+        let choose_theme = [ThemeType::Dark, ThemeType::Light, ThemeType::Custom]
+            .iter()
+            .fold(
+                row![text("Choose a theme:")].spacing(10),
+                |column, theme| {
+                    column.push(radio(
+                        format!("{:?}", theme),
+                        *theme,
+                        Some(match self.theme {
+                            Theme::Dark => ThemeType::Dark,
+                            Theme::Light => ThemeType::Light,
+                            Theme::Custom { .. } => ThemeType::Custom,
+                        }),
+                        Message::ThemeChanged,
+                    ))
+                },
+            );
 
         // let card = column![
         //     row![horizontal_rule(18)],
@@ -125,16 +121,33 @@ impl Sandbox for Styling {
             'M',
             String::from("I'm a developer..."),
         );
-        let content = column![choose_theme, horizontal_rule(38), card]
-            .spacing(20)
-            .padding(20)
-            .max_width(600);
-        container(content)
+
+        let second_card = create_card(
+            String::from("Kush"),
+            String::from("Shrimali"),
+            24,
+            'M',
+            String::from("I'm a developer..."),
+        );
+
+        // let content = column![choose_theme, horizontal_rule(38), card]
+        let content = container(column![choose_theme].spacing(20).padding(20).max_width(600))
             .width(Length::Fill)
-            .height(Length::Fill)
-            .center_x()
-            .center_y()
-            .into()
+            .center_x();
+
+        let card_container_one = container(column![card].spacing(10).padding(20).max_width(600))
+            .style(theme::Container::Box);
+
+        let card_container_two = container(column![second_card].spacing(10).padding(20).max_width(600))
+            .style(theme::Container::Box);
+
+        // Not using the following as I want to have 2 separate containers (header container + card container)
+        // container(content, card_container)
+        //     .width(Length::Fill)
+        //     .height(Length::Fill)
+        //     .center_x()
+        //     .into()
+        column![content, row![card_container_one, card_container_two].spacing(10)].into()
     }
 
     fn theme(&self) -> Theme {
