@@ -8,4 +8,4 @@ If you're curious what this is about, check out the [YT monitoring App stream se
 
 ## Current Progress
 
-<img src="demo/Demo.png" height="400px" />
+<img src="demo/Demo.png" height="600px" width="800px"/>
