@@ -7,7 +7,7 @@ pub fn main() -> iced::Result {
 }
 
 #[derive(Debug, Default, Clone)]
-struct Card {
+pub struct Card {
     first_name: String,
     last_name: String,
     age: i32,
@@ -17,7 +17,7 @@ struct Card {
 
 #[derive(Debug, Default)]
 struct ListOfCards {
-    cards: Vec<Card>
+    cards: Vec<Card>,
 }
 
 #[derive(Default)]
@@ -47,7 +47,9 @@ fn create_list_of_cards() -> ListOfCards {
     let description = "God Level";
 
     let mut list_of_cards = ListOfCards::default();
-    for (first_name, last_name, age, gender) in itertools::izip!(first_names, last_names, ages, genders) {
+    for (first_name, last_name, age, gender) in
+        itertools::izip!(first_names, last_names, ages, genders)
+    {
         let card = Card {
             first_name: first_name.to_string(),
             last_name: last_name.to_string(),
@@ -57,26 +59,23 @@ fn create_list_of_cards() -> ListOfCards {
         };
 
         list_of_cards.cards.push(card);
-    };
+    }
 
     list_of_cards
 }
 
-pub fn create_card(
-    card: &Card,
-) -> iced::Element<'static, Message> {
+pub fn create_card(card: &Card) -> iced::Element<'static, Message> {
     let container_text = "First Name: ".to_owned()
-            + &card.first_name
-            + "\nLast Name: "
-            + &card.last_name
-            + "\nAge: "
-            + &card.age.to_string()
-            + "\nSex: "
-            + &card.sex.to_string()
-            + "\nDescription:\n"
-            + &card.description;
-    container(column![text(container_text)])
-    .into()
+        + &card.first_name
+        + "\nLast Name: "
+        + &card.last_name
+        + "\nAge: "
+        + &card.age.to_string()
+        + "\nSex: "
+        + &card.sex.to_string()
+        + "\nDescription:\n"
+        + &card.description;
+    container(column![text(container_text)]).into()
 }
 
 impl Sandbox for Styling {
@@ -128,43 +127,9 @@ impl Sandbox for Styling {
                 },
             );
 
-        // let card = column![
-        //     row![horizontal_rule(18)],
-        //     column![text("Kushashwa Ravi Shrimali")
-        //         .width(Length::Fill)
-        //         .horizontal_alignment(alignment::Horizontal::Center),],
-        //     text("Another row")
-        //         .width(Length::Fill)
-        //         .horizontal_alignment(alignment::Horizontal::Center),
-        //     vertical_rule(18),
-        // ];
-
-        // let card = create_card(
-        //     String::from("Kush"),
-        //     String::from("Shrimali"),
-        //     24,
-        //     'M',
-        //     String::from("I'm a developer..."),
-        // );
-
-        // let second_card = create_card(
-        //     String::from("Kush"),
-        //     String::from("Shrimali"),
-        //     24,
-        //     'M',
-        //     String::from("I'm a developer..."),
-        // );
-
-        // let content = column![choose_theme, horizontal_rule(38), card]
         let content = container(column![choose_theme].spacing(20).padding(20).max_width(600))
             .width(Length::Fill)
             .center_x();
-
-        // let card_container_one = container(column![card].spacing(10).padding(20).max_width(600))
-        //     .style(theme::Container::Box);
-
-        // let card_container_two = container(column![second_card].spacing(10).padding(20).max_width(600))
-        //     .style(theme::Container::Box);
 
         // Not using the following as I want to have 2 separate containers (header container + card container)
         // container(content, card_container)
@@ -174,24 +139,32 @@ impl Sandbox for Styling {
         //     .into()
 
         let all_cards = create_list_of_cards();
-        // let containers = all_cards.cards.iter().map(|each_card| {
-        //     container(column![create_card(each_card)].spacing(10).padding(20).max_width(600))
-        // }).into_iter();
-        // let mut cards_row = vec![];
-        // for _card_container in containers {
-        //     cards_row.push(_card_contaner);
-        // }
 
         let mut containers = Vec::new();
         for each_card in all_cards.cards.iter() {
-            containers.push(container(column![create_card(each_card)].spacing(10).padding(20).max_width(600)));
+            containers.push(
+                column![create_card(each_card)]
+                    .spacing(10)
+                    .padding(20)
+                    .max_width(600),
+            );
         }
 
-        let mut cards_row = Vec::new();
-        for container in containers {
-          cards_row.push(container);
-        }
-        let row = Row::with_children(cards_row);
+        let row = Row::with_children(
+            all_cards
+                .cards
+                .iter()
+                .map(|each_card| {
+                    container(
+                        column![create_card(each_card)]
+                            .spacing(10)
+                            .padding(20)
+                            .max_width(600),
+                    )
+                    .into()
+                })
+                .collect(),
+        );
 
         column![content, row.spacing(10)].into()
     }
