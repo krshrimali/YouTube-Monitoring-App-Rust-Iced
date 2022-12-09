@@ -1,6 +1,6 @@
 ## YouTube Monitoring App (using Rust)
 
-**Heavy WIP**.
+**Heavy WIP**. Another version of this project is present here: https://github.com/krshrimali/youtuber-monitoring-app.
 
 I'm just trying to figure out if I can build something for the YT monitoring app using [iced-rs library](https://github.com/iced-rs/iced).
 
