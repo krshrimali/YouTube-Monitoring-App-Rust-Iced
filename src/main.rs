@@ -161,6 +161,7 @@ impl Sandbox for Styling {
                             .padding(20)
                             .max_width(600),
                     )
+                    .style(theme::Container::Box)
                     .into()
                 })
                 .collect(),
