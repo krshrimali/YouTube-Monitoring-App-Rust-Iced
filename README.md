@@ -6,6 +6,15 @@ I'm just trying to figure out if I can build something for the YT monitoring app
 
 If you're curious what this is about, check out the [YT monitoring App stream series](https://www.youtube.com/playlist?list=PLfjzHJeA53gS-RyxHcpNdf85Q4tR_ZJ6_) on my [YouTube channel](https://youtube.com/c/kushashwaraviShrimali).
 
-## Current Progress
+## Instructions
+
+Assuming you have `cargo` installed and rust setup, following Instructions should work:
+
+```bash
+cargo build
+cargo run
+```
+
+## Demo
 
 <img src="demo/Demo.png" height="600px" width="800px"/>
