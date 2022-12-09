@@ -7,3 +7,4 @@ publish = false
 
 [dependencies]
 iced = "0.6"
+itertools = "0.10.5"
