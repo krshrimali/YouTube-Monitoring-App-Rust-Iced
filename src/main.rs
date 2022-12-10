@@ -211,8 +211,17 @@ impl Sandbox for Styling {
             .width(Length::Fill)
             .center_x();
 
-        // TODO: Enable this later
-        let footer = container(column![text("Thank you for being here, this was an app by Kushashwa Ravi Shrimali")].spacing(20).padding(20).max_width(600)).width(Length::Fill).center_x().center_y();
+        let footer = container(
+            column![text(
+                "Thank you for being here, this was an app by Kushashwa Ravi Shrimali"
+            )]
+            .spacing(20)
+            .padding(20)
+            .max_width(600),
+        )
+        .width(Length::Fill)
+        .center_x()
+        .center_y();
 
         let all_cards = create_list_of_cards();
         let binding = ListOfCards::default();
@@ -225,7 +234,6 @@ impl Sandbox for Styling {
             create_row(first_row_cards),
             create_row(second_row_cards),
             create_row(third_row_cards),
-            // TODO: Add footer
             horizontal_rule(100),
             footer,
         ])
