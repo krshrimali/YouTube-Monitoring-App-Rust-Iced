@@ -1,5 +1,5 @@
 use iced::theme::{self, Theme};
-use iced::widget::{column, container, radio, row, text, Column, Row};
+use iced::widget::{column, container, radio, row, text, Row};
 use iced::{Color, Length, Renderer, Sandbox, Settings};
 
 pub fn main() -> iced::Result {
@@ -40,8 +40,19 @@ pub enum Message {
 // FIXME: Not taking any arguments intentionally for now, once JSON reading is done
 // add arguments.
 fn create_list_of_cards() -> Vec<ListOfCards> {
-    let first_names = vec!["Kushashwa", "Mohit", "Yatharth", "Vishwesh", "Random", "Second", "Know", "One"];
-    let last_names = vec!["Shrimali", "Wankhade", "Wankhade", "Shrimali", "Random", "Random", "More", "More"];
+    let first_names = vec![
+        "Kushashwa",
+        "Mohit",
+        "Yatharth",
+        "Vishwesh",
+        "Random",
+        "Second",
+        "Know",
+        "One",
+    ];
+    let last_names = vec![
+        "Shrimali", "Wankhade", "Wankhade", "Shrimali", "Random", "Random", "More", "More",
+    ];
     let ages = vec![24, 24, 22, 26, 22, 23, 28, 30];
     let genders = vec!['M', 'M', 'M', 'M', 'F', 'F', 'M', 'G'];
     let description = "God Level";
@@ -157,12 +168,8 @@ impl Sandbox for Styling {
             .width(Length::Fill)
             .center_x();
 
-        // Not using the following as I want to have 2 separate containers (header container + card container)
-        // container(content, card_container)
-        //     .width(Length::Fill)
-        //     .height(Length::Fill)
-        //     .center_x()
-        //     .into()
+        // TODO: Enable this later
+        // let footer = container(column![text("Thank you for being here, this was an app by Kushashwa Ravi Shrimali (github: krshrimali)")].spacing(20).padding(20).max_width(600)).width(Length::Fill).center_x();
 
         let all_cards = create_list_of_cards();
         let binding = ListOfCards::default();
@@ -180,6 +187,8 @@ impl Sandbox for Styling {
             create_row(first_row_cards),
             create_row(second_row_cards),
             create_row(third_row_cards),
+            // TODO: Add footer
+            // footer,
         ])
         .into()
     }
