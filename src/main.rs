@@ -144,10 +144,10 @@ fn profile_pic<'a>(width: u16) -> Container<'a, Message> {
         // This should go away once we unify resource loading on native
         // platforms
         if cfg!(target_arch = "wasm32") {
-            image("profile_images/Kush.png")
+            image("profile_images/Noddy.jpeg")
         } else {
             image(format!(
-                "{}/profile_images/Kush.png",
+                "{}/profile_images/Noddy.jpeg",
                 env!("CARGO_MANIFEST_DIR")
             ))
         }
