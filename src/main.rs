@@ -1,6 +1,6 @@
 use iced::theme::{self, Theme};
-use iced::widget::{column, container, radio, row, text, Row};
-use iced::{Color, Length, Sandbox, Settings};
+use iced::widget::{column, container, radio, row, text, Column, Row};
+use iced::{Color, Length, Renderer, Sandbox, Settings};
 
 pub fn main() -> iced::Result {
     Styling::run(Settings::default())
@@ -15,8 +15,8 @@ pub struct Card {
     description: String,
 }
 
-#[derive(Debug, Default)]
-struct ListOfCards {
+#[derive(Debug, Default, Clone)]
+pub struct ListOfCards {
     cards: Vec<Card>,
 }
 
@@ -39,16 +39,16 @@ pub enum Message {
 
 // FIXME: Not taking any arguments intentionally for now, once JSON reading is done
 // add arguments.
-fn create_list_of_cards() -> ListOfCards {
-    let first_names = vec!["Kushashwa", "Mohit", "Yatharth", "Vishwesh"];
-    let last_names = vec!["Shrimali", "Wankhade", "Wankhade", "Shrimali"];
-    let ages = vec![24, 24, 22, 26];
-    let genders = vec!['M', 'M', 'M', 'M'];
+fn create_list_of_cards() -> Vec<ListOfCards> {
+    let first_names = vec!["Kushashwa", "Mohit", "Yatharth", "Vishwesh", "Random", "Second", "Know", "One"];
+    let last_names = vec!["Shrimali", "Wankhade", "Wankhade", "Shrimali", "Random", "Random", "More", "More"];
+    let ages = vec![24, 24, 22, 26, 22, 23, 28, 30];
+    let genders = vec!['M', 'M', 'M', 'M', 'F', 'F', 'M', 'G'];
     let description = "God Level";
 
-    let mut list_of_cards = ListOfCards::default();
-    for (first_name, last_name, age, gender) in
-        itertools::izip!(first_names, last_names, ages, genders)
+    let mut list_of_cards = vec![ListOfCards::default()];
+    for (count_so_far, (first_name, last_name, age, gender)) in
+        itertools::izip!(first_names, last_names, ages, genders).enumerate()
     {
         let card = Card {
             first_name: first_name.to_string(),
@@ -58,7 +58,12 @@ fn create_list_of_cards() -> ListOfCards {
             description: description.to_string(),
         };
 
-        list_of_cards.cards.push(card);
+        if count_so_far % 4 != 0 || count_so_far == 0 {
+            list_of_cards.last_mut().unwrap().cards.push(card);
+        } else {
+            list_of_cards.push(ListOfCards::default());
+            list_of_cards.last_mut().unwrap().cards.push(card);
+        }
     }
 
     list_of_cards
@@ -76,6 +81,27 @@ pub fn create_card(card: &Card) -> iced::Element<'static, Message> {
         + "\nDescription:\n"
         + &card.description;
     container(column![text(container_text)]).into()
+}
+
+pub fn create_row(cards: &ListOfCards) -> Row<'static, Message> {
+    Row::with_children(
+        cards
+            .cards
+            .iter()
+            .map(|each_card| {
+                container(
+                    column![create_card(each_card)]
+                        .spacing(10)
+                        .padding(20)
+                        .max_width(600),
+                )
+                .padding(10)
+                .width(Length::Fill)
+                .style(theme::Container::Box)
+                .into()
+            })
+            .collect(),
+    )
 }
 
 impl Sandbox for Styling {
@@ -113,7 +139,7 @@ impl Sandbox for Styling {
             .iter()
             .fold(
                 row![text("Choose a theme:")].spacing(10),
-                |column, theme| {
+                |column: iced_native::widget::row::Row<'_, Message, Renderer>, theme| {
                     column.push(radio(
                         format!("{:?}", theme),
                         *theme,
@@ -139,37 +165,23 @@ impl Sandbox for Styling {
         //     .into()
 
         let all_cards = create_list_of_cards();
+        let binding = ListOfCards::default();
+        let first_row_cards = all_cards.get(0).unwrap_or(&binding);
+        let second_row_cards = all_cards.get(1).unwrap_or(&binding);
+        let third_row_cards = all_cards.get(2).unwrap_or(&binding);
 
-        let mut containers = Vec::new();
-        for each_card in all_cards.cards.iter() {
-            containers.push(
-                column![create_card(each_card)]
-                    .spacing(10)
-                    .padding(20)
-                    .max_width(600),
-            );
-        }
+        // For debugging (keeping it here for now)
+        // println!("Length of first row: {:?}", first_row_cards.cards.len());
+        // println!("Length of second row: {:?}", second_row_cards.cards.len());
+        // println!("Length of third row: {:?}", third_row_cards.cards.len());
 
-        let row = Row::with_children(
-            all_cards
-                .cards
-                .iter()
-                .map(|each_card| {
-                    container(
-                        column![create_card(each_card)]
-                            .spacing(10)
-                            .padding(20)
-                            .max_width(600),
-                    )
-                    .padding(10)
-                    .width(Length::Fill)
-                    .style(theme::Container::Box)
-                    .into()
-                })
-                .collect(),
-        );
-
-        column![content, row.spacing(10)].into()
+        container(column![
+            content,
+            create_row(first_row_cards),
+            create_row(second_row_cards),
+            create_row(third_row_cards),
+        ])
+        .into()
     }
 
     fn theme(&self) -> Theme {
