@@ -17,4 +17,4 @@ cargo run
 
 ## Demo
 
-<img src="demo/Demo.png" height="600px" width="800px"/>
+<img src="demo/Demo.png" height="500px" width="1000px"/>
