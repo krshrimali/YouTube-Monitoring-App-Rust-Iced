@@ -7,4 +7,5 @@ publish = false
 
 [dependencies]
 iced = "0.6"
+iced_native = "0.7"
 itertools = "0.10.5"
