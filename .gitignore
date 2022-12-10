@@ -1,2 +1,5 @@
 Cargo.lock
 target
+.DS_Store
+target
+.git

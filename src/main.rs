@@ -1,6 +1,6 @@
 use iced::theme::{self, Theme};
 use iced::widget::{column, container, horizontal_rule, image, radio, row, text, Container, Row};
-use iced::{alignment, Alignment, Color, Length, Renderer, Sandbox, Settings};
+use iced::{Color, Length, Renderer, Sandbox, Settings};
 
 pub fn main() -> iced::Result {
     let mut settings = Settings::default();
@@ -212,7 +212,7 @@ impl Sandbox for Styling {
             .center_x();
 
         // TODO: Enable this later
-        let footer = container(column![text("Thank you for being here, this was an app by Kushashwa Ravi Shrimali")].spacing(20).padding(20).max_width(600)).width(Length::Fill).center_x();
+        let footer = container(column![text("Thank you for being here, this was an app by Kushashwa Ravi Shrimali")].spacing(20).padding(20).max_width(600)).width(Length::Fill).center_x().center_y();
 
         let all_cards = create_list_of_cards();
         let binding = ListOfCards::default();
@@ -220,20 +220,14 @@ impl Sandbox for Styling {
         let second_row_cards = all_cards.get(1).unwrap_or(&binding);
         let third_row_cards = all_cards.get(2).unwrap_or(&binding);
 
-        // For debugging (keeping it here for now)
-        // println!("Length of first row: {:?}", first_row_cards.cards.len());
-        // println!("Length of second row: {:?}", second_row_cards.cards.len());
-        // println!("Length of third row: {:?}", third_row_cards.cards.len());
-
         container(column![
             content,
             create_row(first_row_cards),
             create_row(second_row_cards),
             create_row(third_row_cards),
             // TODO: Add footer
-            horizontal_rule(38),
+            horizontal_rule(100),
             footer,
-            horizontal_rule(38),
         ])
         .height(Length::Shrink)
         .into()
