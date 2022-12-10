@@ -124,7 +124,7 @@ impl Sandbox for Styling {
     }
 
     fn title(&self) -> String {
-        String::from("Theme chooser (iced)")
+        String::from("YT Monitoring App (by KRS)")
     }
 
     fn update(&mut self, message: Self::Message) {
