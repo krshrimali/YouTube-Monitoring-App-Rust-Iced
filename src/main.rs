@@ -1,9 +1,11 @@
 use iced::theme::{self, Theme};
-use iced::widget::{column, container, radio, row, text, Row};
-use iced::{Color, Length, Renderer, Sandbox, Settings};
+use iced::widget::{column, container, horizontal_rule, image, radio, row, text, Container, Row};
+use iced::{alignment, Alignment, Color, Length, Renderer, Sandbox, Settings};
 
 pub fn main() -> iced::Result {
-    Styling::run(Settings::default())
+    let mut settings = Settings::default();
+    settings.window.size = (1600, 800);
+    Styling::run(settings)
 }
 
 #[derive(Debug, Default, Clone)]
@@ -49,12 +51,27 @@ fn create_list_of_cards() -> Vec<ListOfCards> {
         "Second",
         "Know",
         "One",
+        "First",
+        "Second",
+        "Third",
+        "Fourth",
     ];
     let last_names = vec![
-        "Shrimali", "Wankhade", "Wankhade", "Shrimali", "Random", "Random", "More", "More",
+        "Shrimali",
+        "Wankhade",
+        "Wankhade",
+        "Shrimali",
+        "Random",
+        "Random",
+        "More",
+        "More",
+        "First Name",
+        "Second Name",
+        "Third Name",
+        "Fourth Name",
     ];
-    let ages = vec![24, 24, 22, 26, 22, 23, 28, 30];
-    let genders = vec!['M', 'M', 'M', 'M', 'F', 'F', 'M', 'G'];
+    let ages = vec![24, 24, 22, 26, 22, 23, 28, 30, 28, 30, 23, 24];
+    let genders = vec!['M', 'M', 'M', 'M', 'F', 'F', 'M', 'F', 'M', 'F', 'F', 'F'];
     let description = "God Level";
 
     let mut list_of_cards = vec![ListOfCards::default()];
@@ -101,18 +118,44 @@ pub fn create_row(cards: &ListOfCards) -> Row<'static, Message> {
             .iter()
             .map(|each_card| {
                 container(
-                    column![create_card(each_card)]
-                        .spacing(10)
-                        .padding(20)
-                        .max_width(600),
+                    row![
+                        column![create_card(each_card)]
+                            .width(Length::Fill)
+                            .spacing(50)
+                            .padding(20),
+                        column![profile_pic(130)]
+                            .width(Length::Units(130))
+                            .height(Length::Units(150))
+                            .padding(20)
+                    ]
+                    .height(Length::Fill),
                 )
-                .padding(10)
+                .center_y()
                 .width(Length::Fill)
                 .style(theme::Container::Box)
                 .into()
             })
             .collect(),
     )
+}
+
+fn profile_pic<'a>(width: u16) -> Container<'a, Message> {
+    container(
+        // This should go away once we unify resource loading on native
+        // platforms
+        if cfg!(target_arch = "wasm32") {
+            image("profile_images/Kush.png")
+        } else {
+            image(format!(
+                "{}/profile_images/Kush.png",
+                env!("CARGO_MANIFEST_DIR")
+            ))
+        }
+        .height(Length::Units(width))
+        .width(Length::Units(width)),
+    )
+    .width(Length::Fill)
+    .center_x()
 }
 
 impl Sandbox for Styling {
@@ -169,7 +212,7 @@ impl Sandbox for Styling {
             .center_x();
 
         // TODO: Enable this later
-        // let footer = container(column![text("Thank you for being here, this was an app by Kushashwa Ravi Shrimali (github: krshrimali)")].spacing(20).padding(20).max_width(600)).width(Length::Fill).center_x();
+        let footer = container(column![text("Thank you for being here, this was an app by Kushashwa Ravi Shrimali")].spacing(20).padding(20).max_width(600)).width(Length::Fill).center_x();
 
         let all_cards = create_list_of_cards();
         let binding = ListOfCards::default();
@@ -188,8 +231,11 @@ impl Sandbox for Styling {
             create_row(second_row_cards),
             create_row(third_row_cards),
             // TODO: Add footer
-            // footer,
+            horizontal_rule(38),
+            footer,
+            horizontal_rule(38),
         ])
+        .height(Length::Shrink)
         .into()
     }
 
