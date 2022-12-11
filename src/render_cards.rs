@@ -1,4 +1,4 @@
-use iced::theme::{self};
+use iced::theme;
 use iced::widget::{column, container, image, row, text, Column, Container, Row};
 use iced::{Length, Renderer};
 use std::fs::File;

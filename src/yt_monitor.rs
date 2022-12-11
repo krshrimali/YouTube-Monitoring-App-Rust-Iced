@@ -5,18 +5,18 @@ use iced::{Color, Length, Renderer, Sandbox};
 mod render_cards;
 
 #[derive(Default)]
-pub struct Styling {
+pub struct YTMonitor {
     theme: Theme,
     json_obj: render_cards::YTCreator,
 }
 
-impl Sandbox for Styling {
+impl Sandbox for YTMonitor {
     type Message = render_cards::Message;
 
-    fn new() -> Styling {
+    fn new() -> YTMonitor {
         let json_obj = render_cards::get_json_data();
         // Because dark as default is cool :D
-        Styling {
+        YTMonitor {
             theme: Theme::Dark,
             json_obj,
         }
