@@ -177,11 +177,10 @@ pub fn create_row(cards: &ListOfCards) -> Row<'static, Message> {
 fn profile_pic<'a>(width: u16, link: String) -> Container<'a, Message> {
     let img_obj = reqwest::blocking::get(link).ok();
     let img_bytes = match img_obj {
-        Some(bytes) => {
-            bytes.bytes().ok()
-        },
-        None => None
-    }.unwrap();
+        Some(bytes) => bytes.bytes().ok(),
+        None => None,
+    }
+    .unwrap();
 
     let out_img: image::Handle = image::Handle::from_memory(img_bytes.to_vec());
 
@@ -196,8 +195,8 @@ fn profile_pic<'a>(width: u16, link: String) -> Container<'a, Message> {
         //     ))
         // }
         image(out_img)
-        .height(Length::Units(width))
-        .width(Length::Units(width)),
+            .height(Length::Units(width))
+            .width(Length::Units(width)),
     )
     .width(Length::Fill)
     .center_x()
