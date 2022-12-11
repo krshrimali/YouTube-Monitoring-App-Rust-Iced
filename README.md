@@ -17,4 +17,4 @@ cargo run
 
 ## Demo
 
-<img src="demo/Demo.png" height="500px" width="1000px"/>
+![image](https://user-images.githubusercontent.com/19997320/206906945-a6df5f53-8db7-4680-9e19-5f7cccea7736.png)
