@@ -157,7 +157,7 @@ pub fn create_row(cards: &ListOfCards) -> Row<'static, Message> {
                 container(
                     row![
                         column![create_card(each_card)].spacing(50).padding(20),
-                        column![profile_pic(130)]
+                        column![profile_pic(130, each_card.avatar_link.to_owned())]
                             .width(Length::Units(130))
                             .height(Length::Units(150))
                             .padding(20)
@@ -174,18 +174,28 @@ pub fn create_row(cards: &ListOfCards) -> Row<'static, Message> {
     )
 }
 
-fn profile_pic<'a>(width: u16) -> Container<'a, Message> {
+fn profile_pic<'a>(width: u16, link: String) -> Container<'a, Message> {
+    let img_obj = reqwest::blocking::get(link).ok();
+    let img_bytes = match img_obj {
+        Some(bytes) => {
+            bytes.bytes().ok()
+        },
+        None => None
+    }.unwrap();
+
+    let out_img: image::Handle = image::Handle::from_memory(img_bytes.to_vec());
+
     container(
-        // This should go away once we unify resource loading on native
-        // platforms
-        if cfg!(target_arch = "wasm32") {
-            image("profile_images/Noddy.jpeg")
-        } else {
-            image(format!(
-                "{}/profile_images/Noddy.jpeg",
-                env!("CARGO_MANIFEST_DIR")
-            ))
-        }
+        // Keeping this here for the record on how to use image paths
+        // if cfg!(target_arch = "wasm32") {
+        //     image("path")
+        // } else {
+        //     image(format!(
+        //         "path",
+        //         env!("CARGO_MANIFEST_DIR")
+        //     ))
+        // }
+        image(out_img)
         .height(Length::Units(width))
         .width(Length::Units(width)),
     )
