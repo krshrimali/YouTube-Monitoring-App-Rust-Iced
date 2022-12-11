@@ -1,5 +1,5 @@
 use iced::theme::{self, Theme};
-use iced::widget::{column, image, container, horizontal_rule, radio, row, text};
+use iced::widget::{column, container, horizontal_rule, image, radio, row, text};
 use iced::{Color, Length, Renderer, Sandbox};
 #[path = "render_cards.rs"]
 mod render_cards;
@@ -8,7 +8,29 @@ mod render_cards;
 pub struct YTMonitor {
     theme: Theme,
     json_obj: render_cards::YTCreator,
-    loaded_photos: Vec::<image::Handle>,
+    loaded_photos: Vec<image::Handle>,
+}
+
+// TODO: Make two separable users for female and males
+// Not possible for YouTube but worth having for the library (later)
+const DEFAULT_IMAGE_URL: &str = "https://www.w3schools.com/howto/img_avatar.png";
+
+// TODO: Unused for now but can come handy later
+fn default_img_handle(total_count: usize) -> Vec<image::Handle> {
+    // TODO: Later on, accept gender as well
+    let mut default_handles: Vec<image::Handle> = Vec::new();
+    for count in 0..total_count {
+        let img_handle_link = DEFAULT_IMAGE_URL;
+        let img_obj = reqwest::blocking::get(img_handle_link).ok();
+        let img_bytes = match img_obj {
+            Some(bytes) => bytes.bytes().ok(),
+            None => None,
+        }
+        .unwrap();
+        let out_img: image::Handle = image::Handle::from_memory(img_bytes.to_vec());
+        default_handles.push(out_img);
+    }
+    default_handles
 }
 
 impl Sandbox for YTMonitor {
@@ -86,9 +108,14 @@ impl Sandbox for YTMonitor {
 
         let all_cards = render_cards::create_list_of_cards(&self.json_obj);
         let binding = render_cards::ListOfCards::default();
-        let first_row = render_cards::create_row(all_cards.get(0).unwrap_or(&binding), self.loaded_photos.clone());
-        let second_row = render_cards::create_row(all_cards.get(1).unwrap_or(&binding), self.loaded_photos.clone());
-        let third_row = render_cards::create_row(all_cards.get(2).unwrap_or(&binding), self.loaded_photos.clone());
+        let all_photos = self.loaded_photos.to_owned();
+
+        let first_row =
+            render_cards::create_row(all_cards.get(0).unwrap_or(&binding), &all_photos, 0);
+        let second_row =
+            render_cards::create_row(all_cards.get(1).unwrap_or(&binding), &all_photos, 4);
+        let third_row =
+            render_cards::create_row(all_cards.get(2).unwrap_or(&binding), &all_photos, 8);
 
         container(column![
             content,

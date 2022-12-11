@@ -1,13 +1,13 @@
 use iced::theme;
 use iced::widget::{column, container, image, row, text, Column, Container, Row};
 use iced::{Length, Renderer};
-use std::fs::File;
 use serde::Deserialize;
+use std::fs::File;
 use std::io::BufReader;
 
 use std::error::Error;
 
-const MAX_EXPECTED_ITEMS: usize = 12;
+pub const MAX_EXPECTED_ITEMS: usize = 12;
 const JSON_FILE_PATH: &str = "list_users.json";
 
 #[derive(Deserialize, Debug, Default, Clone)]
@@ -134,7 +134,11 @@ pub fn create_card(card: &Card) -> iced::Element<'static, Message> {
     container(column![text(container_text)]).into()
 }
 
-pub fn create_row(cards: &ListOfCards, img_handles: Vec::<image::Handle>) -> Row<'static, Message> {
+pub fn create_row(
+    cards: &ListOfCards,
+    img_handles_row: &[image::Handle],
+    offset: usize,
+) -> Row<'static, Message> {
     Row::with_children(
         cards
             .cards
@@ -144,10 +148,13 @@ pub fn create_row(cards: &ListOfCards, img_handles: Vec::<image::Handle>) -> Row
                 container(
                     row![
                         column![create_card(each_card)].spacing(50).padding(20),
-                        column![profile_pic(130, img_handles.get(idx).unwrap().to_owned())]
-                            .width(Length::Units(130))
-                            .height(Length::Units(150))
-                            .padding(20)
+                        column![profile_pic(
+                            130,
+                            img_handles_row.get(offset + idx).unwrap().to_owned()
+                        )]
+                        .width(Length::Units(130))
+                        .height(Length::Units(150))
+                        .padding(20)
                     ]
                     .align_items(iced::Alignment::End)
                     .height(Length::Fill),
@@ -203,7 +210,7 @@ pub fn get_json_data() -> YTCreator {
     obj
 }
 
-pub fn get_all_avatars(json_obj: &YTCreator) -> Vec::<image::Handle> {
+pub fn get_all_avatars(json_obj: &YTCreator) -> Vec<image::Handle> {
     let mut out_handles: Vec<image::Handle> = Vec::new();
     for link in &json_obj.avatar_links {
         let img_obj = reqwest::blocking::get(link).ok();
