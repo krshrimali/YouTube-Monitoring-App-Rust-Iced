@@ -1,6 +1,62 @@
 use iced::theme::{self, Theme};
-use iced::widget::{column, container, horizontal_rule, image, radio, row, text, Container, Row, Column};
+use iced::widget::{
+    column, container, horizontal_rule, image, radio, row, text, Column, Container, Row,
+};
 use iced::{Color, Length, Renderer, Sandbox, Settings};
+use std::fs::File;
+// mod parser;
+use serde::Deserialize;
+use std::io::BufReader;
+
+use std::error::Error;
+
+const MAX_EXPECTED_ITEMS: usize = 12;
+const JSON_FILE_PATH: &str = "list_users.json";
+
+#[derive(Deserialize, Debug)]
+pub struct YTCreator {
+    names: Vec<String>,
+    avatar_links: Vec<String>,
+    descriptions: Vec<String>,
+    is_live_status: Vec<String>,
+    subscribers: Vec<String>,
+}
+
+impl YTCreator {
+    fn size(&self) -> usize {
+        self.names.len()
+    }
+
+    fn slice_to(&self, count_items: usize) -> YTCreator {
+        let mut new_obj = YTCreator {
+            names: Vec::new(),
+            avatar_links: Vec::new(),
+            descriptions: Vec::new(),
+            is_live_status: Vec::new(),
+            subscribers: Vec::new(),
+        };
+        new_obj.names = self.names.get(0..count_items).unwrap().to_vec();
+        new_obj.avatar_links = self.avatar_links.get(0..count_items).unwrap().to_vec();
+        new_obj.descriptions = self.descriptions.get(0..count_items).unwrap().to_vec();
+        new_obj.is_live_status = self.is_live_status.get(0..count_items).unwrap().to_vec();
+        new_obj.subscribers = self.subscribers.get(0..count_items).unwrap().to_vec();
+        new_obj
+    }
+}
+
+// Straight from the documentation
+pub fn read_json(file_path: &str) -> Result<YTCreator, Box<dyn Error>> {
+    let file = File::open(file_path)?;
+    let reader = BufReader::new(file);
+
+    // Read the JSON contents of the file as an instance of `YTCreator`.
+    let u: YTCreator = serde_json::from_reader(reader)?;
+    if u.size() > MAX_EXPECTED_ITEMS {
+        Ok(u.slice_to(MAX_EXPECTED_ITEMS))
+    } else {
+        Ok(u)
+    }
+}
 
 pub fn main() -> iced::Result {
     let mut settings = Settings::default();
@@ -10,11 +66,11 @@ pub fn main() -> iced::Result {
 
 #[derive(Debug, Default, Clone)]
 pub struct Card {
-    first_name: String,
-    last_name: String,
-    age: i32,
-    sex: char,
+    name: String,
+    avatar_link: String,
     description: String,
+    is_live_status: String,
+    subscribers: String,
 }
 
 #[derive(Debug, Default, Clone)]
@@ -48,49 +104,24 @@ enum TextType {
 
 // FIXME: Not taking any arguments intentionally for now, once JSON reading is done
 // add arguments.
-fn create_list_of_cards() -> Vec<ListOfCards> {
-    let first_names = vec![
-        "Kushashwa",
-        "Mohit",
-        "Yatharth",
-        "Vishwesh",
-        "Random",
-        "Second",
-        "Know",
-        "One",
-        "First",
-        "Second",
-        "Third",
-        "Fourth",
-    ];
-    let last_names = vec![
-        "Shrimali",
-        "Wankhade",
-        "Wankhade",
-        "Shrimali",
-        "Random",
-        "Random",
-        "More",
-        "More",
-        "First Name",
-        "Second Name",
-        "Third Name",
-        "Fourth Name",
-    ];
-    let ages = vec![24, 24, 22, 26, 22, 23, 28, 30, 28, 30, 23, 24];
-    let genders = vec!['M', 'M', 'M', 'M', 'F', 'F', 'M', 'F', 'M', 'F', 'F', 'F'];
-    let description = "God Level";
-
+fn create_list_of_cards(obj: YTCreator) -> Vec<ListOfCards> {
     let mut list_of_cards = vec![ListOfCards::default()];
-    for (count_so_far, (first_name, last_name, age, gender)) in
-        itertools::izip!(first_names, last_names, ages, genders).enumerate()
+    for (count_so_far, (name, description, is_live_status, subscribers, avatar_link)) in
+        itertools::izip!(
+            obj.names,
+            obj.descriptions,
+            obj.is_live_status,
+            obj.subscribers,
+            obj.avatar_links
+        )
+        .enumerate()
     {
         let card = Card {
-            first_name: first_name.to_string(),
-            last_name: last_name.to_string(),
-            age,
-            sex: gender,
-            description: description.to_string(),
+            name,
+            description,
+            is_live_status,
+            subscribers,
+            avatar_link,
         };
 
         if count_so_far % 4 != 0 || count_so_far == 0 {
@@ -105,16 +136,15 @@ fn create_list_of_cards() -> Vec<ListOfCards> {
 }
 
 pub fn create_card(card: &Card) -> iced::Element<'static, Message> {
-    let container_text = "First Name: ".to_owned()
-        + &card.first_name
-        + "\nLast Name: "
-        + &card.last_name
-        + "\nAge: "
-        + &card.age.to_string()
-        + "\nSex: "
-        + &card.sex.to_string()
-        + "\nDescription:\n"
-        + &card.description;
+    let container_text = "Name: ".to_owned()
+        + &card.name
+        + "\nDescription: "
+        + &card.description
+        + "\nSubscriber Count: "
+        + &card.subscribers
+        + "\nIs Live?: "
+        + &card.is_live_status
+        + "\n";
     container(column![text(container_text)]).into()
 }
 
@@ -126,19 +156,17 @@ pub fn create_row(cards: &ListOfCards) -> Row<'static, Message> {
             .map(|each_card| {
                 container(
                     row![
-                        column![create_card(each_card)]
-                            .width(Length::Fill)
-                            .spacing(50)
-                            .padding(20),
-                        column![profile_pic(130)]
+                        column![create_card(each_card)].spacing(50).padding(20),
+                        column![profile_pic(130, each_card.avatar_link.to_owned())]
                             .width(Length::Units(130))
                             .height(Length::Units(150))
                             .padding(20)
                     ]
+                    .align_items(iced::Alignment::End)
                     .height(Length::Fill),
                 )
-                .center_y()
                 .width(Length::Fill)
+                .center_y()
                 .style(theme::Container::Box)
                 .into()
             })
@@ -146,20 +174,29 @@ pub fn create_row(cards: &ListOfCards) -> Row<'static, Message> {
     )
 }
 
-fn profile_pic<'a>(width: u16) -> Container<'a, Message> {
+fn profile_pic<'a>(width: u16, link: String) -> Container<'a, Message> {
+    let img_obj = reqwest::blocking::get(link).ok();
+    let img_bytes = match img_obj {
+        Some(bytes) => bytes.bytes().ok(),
+        None => None,
+    }
+    .unwrap();
+
+    let out_img: image::Handle = image::Handle::from_memory(img_bytes.to_vec());
+
     container(
-        // This should go away once we unify resource loading on native
-        // platforms
-        if cfg!(target_arch = "wasm32") {
-            image("profile_images/Noddy.jpeg")
-        } else {
-            image(format!(
-                "{}/profile_images/Noddy.jpeg",
-                env!("CARGO_MANIFEST_DIR")
-            ))
-        }
-        .height(Length::Units(width))
-        .width(Length::Units(width)),
+        // Keeping this here for the record on how to use image paths
+        // if cfg!(target_arch = "wasm32") {
+        //     image("path")
+        // } else {
+        //     image(format!(
+        //         "path",
+        //         env!("CARGO_MANIFEST_DIR")
+        //     ))
+        // }
+        image(out_img)
+            .height(Length::Units(width))
+            .width(Length::Units(width)),
     )
     .width(Length::Fill)
     .center_x()
@@ -168,18 +205,16 @@ fn profile_pic<'a>(width: u16) -> Container<'a, Message> {
 fn create_text<'a>(input_text: String, text_type: TextType) -> Container<'a, Message, Renderer> {
     let text_column: Column<'_, Message, Renderer> = column![text(input_text)];
     let text_column_with_props = match text_type {
-        TextType::Header => {
-            text_column.spacing(20).padding(20).max_width(600)
-        }
-        TextType::Footer => {
-            text_column.spacing(20).padding(20).max_width(600)
-        }
-        TextType::Normal => {
-            text_column
-        }
+        TextType::Header => text_column.spacing(20).padding(20).max_width(600),
+        TextType::Footer => text_column.spacing(20).padding(20).max_width(600),
+        TextType::Normal => text_column,
     };
 
-    container(text_column_with_props).width(Length::Fill).height(Length::Fill).center_x().center_y()
+    container(text_column_with_props)
+        .width(Length::Fill)
+        .height(Length::Fill)
+        .center_x()
+        .center_y()
 }
 
 impl Sandbox for Styling {
@@ -236,21 +271,21 @@ impl Sandbox for Styling {
             .center_x();
 
         let footer = create_text(
-            "Thank you for being here, this was an app by Kushashwa Ravi Shrimali".to_string(), TextType::Footer,
+            "Thank you for being here, this was an app by Kushashwa Ravi Shrimali".to_string(),
+            TextType::Footer,
         );
 
-        let title_header =
-            create_text("Welcome! Here is the status of your favorite YouTubers:".to_string(), TextType::Header);
+        let title_header = create_text(
+            "Welcome! Here is the status of your favorite YouTubers:".to_string(),
+            TextType::Header,
+        );
 
-        let all_cards = create_list_of_cards();
+        let obj = read_json(JSON_FILE_PATH).unwrap();
+        let all_cards = create_list_of_cards(obj);
         let binding = ListOfCards::default();
         let first_row_cards = all_cards.get(0).unwrap_or(&binding);
         let second_row_cards = all_cards.get(1).unwrap_or(&binding);
         let third_row_cards = all_cards.get(2).unwrap_or(&binding);
-
-        // container(create_row(first_row_cards)).height(Length::FillPortion(2)),
-        // container(create_row(second_row_cards)).height(Length::FillPortion(2)),
-        // container(create_row(third_row_cards)).height(Length::FillPortion(2)),
 
         container(column![
             content,
