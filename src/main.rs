@@ -1,5 +1,5 @@
 use iced::theme::{self, Theme};
-use iced::widget::{column, container, horizontal_rule, image, radio, row, text, Container, Row};
+use iced::widget::{column, container, horizontal_rule, image, radio, row, text, Container, Row, Column};
 use iced::{Color, Length, Renderer, Sandbox, Settings};
 
 pub fn main() -> iced::Result {
@@ -37,6 +37,13 @@ pub enum ThemeType {
 #[derive(Debug, Clone)]
 pub enum Message {
     ThemeChanged(ThemeType),
+}
+
+#[derive(Debug)]
+enum TextType {
+    Header,
+    Footer,
+    Normal,
 }
 
 // FIXME: Not taking any arguments intentionally for now, once JSON reading is done
@@ -158,6 +165,23 @@ fn profile_pic<'a>(width: u16) -> Container<'a, Message> {
     .center_x()
 }
 
+fn create_text<'a>(input_text: String, text_type: TextType) -> Container<'a, Message, Renderer> {
+    let text_column: Column<'_, Message, Renderer> = column![text(input_text)];
+    let text_column_with_props = match text_type {
+        TextType::Header => {
+            text_column.spacing(20).padding(20).max_width(600)
+        }
+        TextType::Footer => {
+            text_column.spacing(20).padding(20).max_width(600)
+        }
+        TextType::Normal => {
+            text_column
+        }
+    };
+
+    container(text_column_with_props).width(Length::Fill).height(Length::Fill).center_x().center_y()
+}
+
 impl Sandbox for Styling {
     type Message = Message;
 
@@ -211,17 +235,12 @@ impl Sandbox for Styling {
             .width(Length::Fill)
             .center_x();
 
-        let footer = container(
-            column![text(
-                "Thank you for being here, this was an app by Kushashwa Ravi Shrimali"
-            )]
-            .spacing(20)
-            .padding(20)
-            .max_width(600),
-        )
-        .width(Length::Fill)
-        .center_x()
-        .center_y();
+        let footer = create_text(
+            "Thank you for being here, this was an app by Kushashwa Ravi Shrimali".to_string(), TextType::Footer,
+        );
+
+        let title_header =
+            create_text("Welcome! Here is the status of your favorite YouTubers:".to_string(), TextType::Header);
 
         let all_cards = create_list_of_cards();
         let binding = ListOfCards::default();
@@ -229,13 +248,21 @@ impl Sandbox for Styling {
         let second_row_cards = all_cards.get(1).unwrap_or(&binding);
         let third_row_cards = all_cards.get(2).unwrap_or(&binding);
 
+        // container(create_row(first_row_cards)).height(Length::FillPortion(2)),
+        // container(create_row(second_row_cards)).height(Length::FillPortion(2)),
+        // container(create_row(third_row_cards)).height(Length::FillPortion(2)),
+
         container(column![
             content,
+            horizontal_rule(10),
+            title_header,
+            horizontal_rule(10),
             create_row(first_row_cards),
             create_row(second_row_cards),
             create_row(third_row_cards),
-            horizontal_rule(100),
+            horizontal_rule(10),
             footer,
+            horizontal_rule(10),
         ])
         .height(Length::Shrink)
         .into()
