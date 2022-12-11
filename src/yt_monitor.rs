@@ -1,5 +1,5 @@
 use iced::theme::{self, Theme};
-use iced::widget::{column, container, horizontal_rule, radio, row, text};
+use iced::widget::{column, image, container, horizontal_rule, radio, row, text};
 use iced::{Color, Length, Renderer, Sandbox};
 #[path = "render_cards.rs"]
 mod render_cards;
@@ -8,6 +8,7 @@ mod render_cards;
 pub struct YTMonitor {
     theme: Theme,
     json_obj: render_cards::YTCreator,
+    loaded_photos: Vec::<image::Handle>,
 }
 
 impl Sandbox for YTMonitor {
@@ -15,10 +16,12 @@ impl Sandbox for YTMonitor {
 
     fn new() -> YTMonitor {
         let json_obj = render_cards::get_json_data();
+        let image_handles = render_cards::get_all_avatars(&json_obj);
         // Because dark as default is cool :D
         YTMonitor {
             theme: Theme::Dark,
             json_obj,
+            loaded_photos: image_handles,
         }
     }
 
@@ -83,9 +86,9 @@ impl Sandbox for YTMonitor {
 
         let all_cards = render_cards::create_list_of_cards(&self.json_obj);
         let binding = render_cards::ListOfCards::default();
-        let first_row = render_cards::create_row(all_cards.get(0).unwrap_or(&binding));
-        let second_row = render_cards::create_row(all_cards.get(1).unwrap_or(&binding));
-        let third_row = render_cards::create_row(all_cards.get(2).unwrap_or(&binding));
+        let first_row = render_cards::create_row(all_cards.get(0).unwrap_or(&binding), self.loaded_photos.clone());
+        let second_row = render_cards::create_row(all_cards.get(1).unwrap_or(&binding), self.loaded_photos.clone());
+        let third_row = render_cards::create_row(all_cards.get(2).unwrap_or(&binding), self.loaded_photos.clone());
 
         container(column![
             content,

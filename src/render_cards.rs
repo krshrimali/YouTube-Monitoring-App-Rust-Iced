@@ -134,16 +134,17 @@ pub fn create_card(card: &Card) -> iced::Element<'static, Message> {
     container(column![text(container_text)]).into()
 }
 
-pub fn create_row(cards: &ListOfCards) -> Row<'static, Message> {
+pub fn create_row(cards: &ListOfCards, img_handles: Vec::<image::Handle>) -> Row<'static, Message> {
     Row::with_children(
         cards
             .cards
             .iter()
-            .map(|each_card| {
+            .enumerate()
+            .map(|(idx, each_card)| {
                 container(
                     row![
                         column![create_card(each_card)].spacing(50).padding(20),
-                        column![profile_pic(130, each_card.avatar_link.to_owned())]
+                        column![profile_pic(130, img_handles.get(idx).unwrap().to_owned())]
                             .width(Length::Units(130))
                             .height(Length::Units(150))
                             .padding(20)
@@ -160,16 +161,7 @@ pub fn create_row(cards: &ListOfCards) -> Row<'static, Message> {
     )
 }
 
-pub fn profile_pic<'a>(width: u16, link: String) -> Container<'a, Message> {
-    let img_obj = reqwest::blocking::get(link).ok();
-    let img_bytes = match img_obj {
-        Some(bytes) => bytes.bytes().ok(),
-        None => None,
-    }
-    .unwrap();
-
-    let out_img: image::Handle = image::Handle::from_memory(img_bytes.to_vec());
-
+pub fn profile_pic<'a>(width: u16, img_handle: image::Handle) -> Container<'a, Message> {
     container(
         // Keeping this here for the record on how to use image paths
         // if cfg!(target_arch = "wasm32") {
@@ -180,7 +172,7 @@ pub fn profile_pic<'a>(width: u16, link: String) -> Container<'a, Message> {
         //         env!("CARGO_MANIFEST_DIR")
         //     ))
         // }
-        image(out_img)
+        image(img_handle)
             .height(Length::Units(width))
             .width(Length::Units(width)),
     )
@@ -209,4 +201,20 @@ pub fn create_text<'a>(
 pub fn get_json_data() -> YTCreator {
     let obj = read_json(JSON_FILE_PATH).unwrap();
     obj
+}
+
+pub fn get_all_avatars(json_obj: &YTCreator) -> Vec::<image::Handle> {
+    let mut out_handles: Vec<image::Handle> = Vec::new();
+    for link in &json_obj.avatar_links {
+        let img_obj = reqwest::blocking::get(link).ok();
+        let img_bytes = match img_obj {
+            Some(bytes) => bytes.bytes().ok(),
+            None => None,
+        }
+        .unwrap();
+        let out_img: image::Handle = image::Handle::from_memory(img_bytes.to_vec());
+        out_handles.push(out_img);
+    }
+
+    out_handles
 }
