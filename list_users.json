@@ -12,10 +12,12 @@
     "Tom",
     "Jerry",
     "Scooby",
-    "One"
+    "One",
+    "Extra One more"
   ],
   "avatar_links": [
-    "https://www.w3schools.com/howto/img_avatar.png",
+    "https://avatars.githubusercontent.com/u/19997320?v=4",
+    "https://media-exp1.licdn.com/dms/image/C4D03AQGiAbH1TT3fNA/profile-displayphoto-shrink_800_800/0/1642226109876?e=2147483647&v=beta&t=fcJojobq-NZv0oNX_WW9RrCsYsoTqz0TSYMcC6zOGco",
     "https://www.w3schools.com/howto/img_avatar.png",
     "https://www.w3schools.com/howto/img_avatar.png",
     "https://www.w3schools.com/howto/img_avatar.png",
@@ -42,7 +44,8 @@
     "Developer",
     "Developer",
     "Developer",
-    "Extra developer"
+    "Extra developer",
+    "Whatever"
   ],
   "is_live_status": [
     "true",
@@ -57,7 +60,8 @@
     "true",
     "true",
     "true",
-    "false"
+    "false",
+    "true"
   ],
-  "subscribers": ["100", "200", "300", "400", "500", "600", "700", "800", "900", "1000", "1100", "1200", "0"]
+  "subscribers": ["100", "200", "300", "400", "500", "600", "700", "800", "900", "1000", "1100", "1200", "0", "-1"]
 }
