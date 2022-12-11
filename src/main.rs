@@ -2,7 +2,7 @@ use iced::theme::{self, Theme};
 use iced::widget::{
     column, container, horizontal_rule, image, radio, row, text, Column, Container, Row,
 };
-use iced::{Color, Length, Renderer, Sandbox, Settings};
+use iced::{alignment, Color, Length, Renderer, Sandbox, Settings};
 use std::fs::File;
 // mod parser;
 use serde::Deserialize;
@@ -128,7 +128,6 @@ pub fn create_row(cards: &ListOfCards) -> Row<'static, Message> {
                 container(
                     row![
                         column![create_card(each_card)]
-                            .width(Length::Fill)
                             .spacing(50)
                             .padding(20),
                         column![profile_pic(130)]
@@ -136,10 +135,11 @@ pub fn create_row(cards: &ListOfCards) -> Row<'static, Message> {
                             .height(Length::Units(150))
                             .padding(20)
                     ]
+                    .align_items(iced::Alignment::End)
                     .height(Length::Fill),
                 )
-                .center_y()
                 .width(Length::Fill)
+                .center_y()
                 .style(theme::Container::Box)
                 .into()
             })
