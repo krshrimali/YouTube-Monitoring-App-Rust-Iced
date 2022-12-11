@@ -2,7 +2,7 @@ use iced::theme::{self, Theme};
 use iced::widget::{
     column, container, horizontal_rule, image, radio, row, text, Column, Container, Row,
 };
-use iced::{alignment, Color, Length, Renderer, Sandbox, Settings};
+use iced::{Color, Length, Renderer, Sandbox, Settings};
 use std::fs::File;
 // mod parser;
 use serde::Deserialize;
@@ -26,17 +26,36 @@ impl YTCreator {
     fn size(&self) -> usize {
         self.names.len()
     }
+
+    fn slice_to(&self, count_items: usize) -> YTCreator {
+        let mut new_obj = YTCreator {
+            names: Vec::new(),
+            avatar_links: Vec::new(),
+            descriptions: Vec::new(),
+            is_live_status: Vec::new(),
+            subscribers: Vec::new(),
+        };
+        new_obj.names = self.names.get(0..count_items).unwrap().to_vec();
+        new_obj.avatar_links = self.avatar_links.get(0..count_items).unwrap().to_vec();
+        new_obj.descriptions = self.descriptions.get(0..count_items).unwrap().to_vec();
+        new_obj.is_live_status = self.is_live_status.get(0..count_items).unwrap().to_vec();
+        new_obj.subscribers = self.subscribers.get(0..count_items).unwrap().to_vec();
+        new_obj
+    }
 }
 
 // Straight from the documentation
 pub fn read_json(file_path: &str) -> Result<YTCreator, Box<dyn Error>> {
-    let file = File::open("list_users.json")?;
+    let file = File::open(file_path)?;
     let reader = BufReader::new(file);
 
     // Read the JSON contents of the file as an instance of `YTCreator`.
     let u: YTCreator = serde_json::from_reader(reader)?;
-    let is_size_okay = u.size() == MAX_EXPECTED_ITEMS;
-    Ok(u)
+    if u.size() > MAX_EXPECTED_ITEMS {
+        Ok(u.slice_to(MAX_EXPECTED_ITEMS))
+    } else {
+        Ok(u)
+    }
 }
 
 pub fn main() -> iced::Result {
@@ -137,9 +156,7 @@ pub fn create_row(cards: &ListOfCards) -> Row<'static, Message> {
             .map(|each_card| {
                 container(
                     row![
-                        column![create_card(each_card)]
-                            .spacing(50)
-                            .padding(20),
+                        column![create_card(each_card)].spacing(50).padding(20),
                         column![profile_pic(130)]
                             .width(Length::Units(130))
                             .height(Length::Units(150))

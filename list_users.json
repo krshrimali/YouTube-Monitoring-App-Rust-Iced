@@ -11,9 +11,11 @@
     "Chota Bheem",
     "Tom",
     "Jerry",
-    "Scooby"
+    "Scooby",
+    "One"
   ],
   "avatar_links": [
+    "https://www.w3schools.com/howto/img_avatar.png",
     "https://www.w3schools.com/howto/img_avatar.png",
     "https://www.w3schools.com/howto/img_avatar.png",
     "https://www.w3schools.com/howto/img_avatar.png",
@@ -39,7 +41,8 @@
     "Developer",
     "Developer",
     "Developer",
-    "Developer"
+    "Developer",
+    "Extra developer"
   ],
   "is_live_status": [
     "true",
@@ -53,7 +56,8 @@
     "true",
     "true",
     "true",
-    "true"
+    "true",
+    "false"
   ],
-  "subscribers": ["100", "200", "300", "400", "500", "600", "700", "800", "900", "1000", "1100", "1200"]
+  "subscribers": ["100", "200", "300", "400", "500", "600", "700", "800", "900", "1000", "1100", "1200", "0"]
 }
