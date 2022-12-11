@@ -76,38 +76,6 @@ enum TextType {
 // FIXME: Not taking any arguments intentionally for now, once JSON reading is done
 // add arguments.
 fn create_list_of_cards(obj: YTCreator) -> Vec<ListOfCards> {
-    // let first_names = vec![
-    //     "Kushashwa",
-    //     "Mohit",
-    //     "Yatharth",
-    //     "Vishwesh",
-    //     "Random",
-    //     "Second",
-    //     "Know",
-    //     "One",
-    //     "First",
-    //     "Second",
-    //     "Third",
-    //     "Fourth",
-    // ];
-    // let last_names = vec![
-    //     "Shrimali",
-    //     "Wankhade",
-    //     "Wankhade",
-    //     "Shrimali",
-    //     "Random",
-    //     "Random",
-    //     "More",
-    //     "More",
-    //     "First Name",
-    //     "Second Name",
-    //     "Third Name",
-    //     "Fourth Name",
-    // ];
-    // let ages = vec![24, 24, 22, 26, 22, 23, 28, 30, 28, 30, 23, 24];
-    // let genders = vec!['M', 'M', 'M', 'M', 'F', 'F', 'M', 'F', 'M', 'F', 'F', 'F'];
-    // let description = "God Level";
-
     let mut list_of_cards = vec![ListOfCards::default()];
     for (count_so_far, (name, description, is_live_status, subscribers, avatar_link)) in
         itertools::izip!(
