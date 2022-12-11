@@ -10,6 +10,9 @@ use std::io::BufReader;
 
 use std::error::Error;
 
+const MAX_EXPECTED_ITEMS: usize = 12;
+const JSON_FILE_PATH: &str = "list_users.json";
+
 #[derive(Deserialize, Debug)]
 pub struct YTCreator {
     names: Vec<String>,
@@ -19,13 +22,20 @@ pub struct YTCreator {
     subscribers: Vec<String>,
 }
 
+impl YTCreator {
+    fn size(&self) -> usize {
+        self.names.len()
+    }
+}
+
 // Straight from the documentation
-pub fn read_json() -> Result<YTCreator, Box<dyn Error>> {
+pub fn read_json(file_path: &str) -> Result<YTCreator, Box<dyn Error>> {
     let file = File::open("list_users.json")?;
     let reader = BufReader::new(file);
 
     // Read the JSON contents of the file as an instance of `YTCreator`.
-    let u = serde_json::from_reader(reader)?;
+    let u: YTCreator = serde_json::from_reader(reader)?;
+    let is_size_okay = u.size() == MAX_EXPECTED_ITEMS;
     Ok(u)
 }
 
@@ -244,7 +254,7 @@ impl Sandbox for Styling {
             TextType::Header,
         );
 
-        let obj = read_json().unwrap();
+        let obj = read_json(JSON_FILE_PATH).unwrap();
         let all_cards = create_list_of_cards(obj);
         let binding = ListOfCards::default();
         let first_row_cards = all_cards.get(0).unwrap_or(&binding);
