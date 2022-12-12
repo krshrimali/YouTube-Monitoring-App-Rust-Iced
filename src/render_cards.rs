@@ -58,11 +58,13 @@ impl YTCreator {
         for field_name in YTCreator::field_names().iter() {
             let len_field: usize = self.get_field(field_name).unwrap().len();
             lengths_all.push(len_field);
-            let msg = format!(
-                "Found: {} but got {} for the given field_name: {}\n",
-                len_field, MAX_EXPECTED_ITEMS, field_name
-            );
-            msges += &msg;
+            if len_field > MAX_EXPECTED_ITEMS {
+                let msg = format!(
+                    "Found: {} but got {} for the given field_name: {}\n",
+                    len_field, MAX_EXPECTED_ITEMS, field_name
+                );
+                msges += &msg;
+            };
         }
 
         if !msges.is_empty() {
