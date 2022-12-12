@@ -10,17 +10,67 @@ use std::error::Error;
 pub const MAX_EXPECTED_ITEMS: usize = 12;
 const JSON_FILE_PATH: &str = "list_users.json";
 
-#[derive(Deserialize, Debug, Default, Clone)]
-pub struct YTCreator {
-    names: Vec<String>,
-    avatar_links: Vec<String>,
-    descriptions: Vec<String>,
-    is_live_status: Vec<String>,
-    subscribers: Vec<String>,
+macro_rules! get_struct_names {
+    (
+        #[derive($($derive_name:ident),*)]
+        pub struct $name:ident {
+            $($fname:ident : $ftype:ty), *
+        }
+    ) => {
+        #[derive($($derive_name),*)]
+        pub struct $name {
+            $($fname : $ftype),*
+        }
+
+        impl $name {
+            fn field_names() -> &'static [&'static str] {
+                static NAMES: &'static [&'static str] = &[$(stringify!($fname)), *];
+                NAMES
+            }
+
+            fn get_field(&self, field_name: &str) -> Option<&Vec<String>> {
+                match field_name {
+                    $(stringify!($fname) => Some(&self.$fname)),
+                    *,
+                    &_ => None
+                }
+            }
+        }
+    }
+}
+
+get_struct_names! {
+    #[derive(Deserialize, Debug, Default, Clone)]
+    pub struct YTCreator {
+        names: Vec<String>,
+        avatar_links: Vec<String>,
+        descriptions: Vec<String>,
+        is_live_status: Vec<String>,
+        subscribers: Vec<String>
+    }
 }
 
 impl YTCreator {
     fn size(&self) -> usize {
+        // println!("Field names: {:?}", YTCreator::field_names());
+        let mut lengths_all: Vec<usize> = vec![];
+        let mut msges: String = "".to_string();
+        for field_name in YTCreator::field_names().iter() {
+            let len_field: usize = self.get_field(field_name).unwrap().len();
+            lengths_all.push(len_field);
+            let msg = format!(
+                "Found: {} but got {} for the given field_name: {}\n",
+                len_field, MAX_EXPECTED_ITEMS, field_name
+            );
+            msges += &msg;
+        }
+
+        if !msges.is_empty() {
+            panic!("Found more items than expected. {msges}");
+        }
+        assert!(lengths_all
+            .windows(2)
+            .all(|single_len| single_len[0] == single_len[1]));
         self.names.len()
     }
 
