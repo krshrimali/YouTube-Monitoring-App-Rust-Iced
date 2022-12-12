@@ -10,6 +10,7 @@ use std::error::Error;
 pub const MAX_EXPECTED_ITEMS: usize = 12;
 const JSON_FILE_PATH: &str = "list_users.json";
 
+// This also adds an impl: get_field to get the corresponding field from the field name (&str)
 macro_rules! get_struct_names {
     (
         #[derive($($derive_name:ident),*)]
