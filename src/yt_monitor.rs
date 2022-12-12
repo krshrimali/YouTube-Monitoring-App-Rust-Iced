@@ -19,7 +19,7 @@ const DEFAULT_IMAGE_URL: &str = "https://www.w3schools.com/howto/img_avatar.png"
 fn default_img_handle(total_count: usize) -> Vec<image::Handle> {
     // TODO: Later on, accept gender as well
     let mut default_handles: Vec<image::Handle> = Vec::new();
-    for count in 0..total_count {
+    for _ in 0..total_count {
         let img_handle_link = DEFAULT_IMAGE_URL;
         let img_obj = reqwest::blocking::get(img_handle_link).ok();
         let img_bytes = match img_obj {
