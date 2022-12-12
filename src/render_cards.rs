@@ -40,7 +40,7 @@ macro_rules! get_struct_names {
 }
 
 get_struct_names! {
-    #[derive(Deserialize, Debug, Default, Clone)]
+    #[derive(Deserialize, Debug, Default, Clone, PartialEq, Eq)]
     pub struct YTCreator {
         names: Vec<String>,
         avatar_links: Vec<String>,
@@ -257,8 +257,9 @@ pub fn create_text<'a>(
         .center_y()
 }
 
-pub fn get_json_data() -> YTCreator {
-    let obj = read_json(JSON_FILE_PATH).unwrap();
+pub fn get_json_data(json_path: Option<&str>) -> YTCreator {
+    let json_file_path = json_path.unwrap_or(JSON_FILE_PATH);
+    let obj = read_json(json_file_path).unwrap();
     obj
 }
 
@@ -276,4 +277,21 @@ pub fn get_all_avatars(json_obj: &YTCreator) -> Vec<image::Handle> {
     }
 
     out_handles
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_get_json_data() {
+        let expected_output: YTCreator = YTCreator {
+            names: vec!["Kush".to_string(), "Kushashwa".to_string()],
+            avatar_links: vec!["https://avatars.githubusercontent.com/u/19997320?v=4".to_string(), "https://media-exp1.licdn.com/dms/image/C4D03AQGiAbH1TT3fNA/profile-displayphoto-shrink_800_800/0/1642226109876?e=2147483647&v=beta&t=fcJojobq-NZv0oNX_WW9RrCsYsoTqz0TSYMcC6zOGco".to_string()],
+            descriptions: vec!["Developer".to_string(), "Developer".to_string()],
+            is_live_status: vec!["true".to_string(), "true".to_string()],
+            subscribers: vec!["100".to_string(), "200".to_string()]
+        };
+        assert_eq!(get_json_data(Some("test_assets/sample_data.json")), expected_output);
+    }
 }
