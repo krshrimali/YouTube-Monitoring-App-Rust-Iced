@@ -285,11 +285,11 @@ mod test {
     #[test]
     fn test_get_json_data_valid_file() {
         let expected_output: YTCreator = YTCreator {
-            names: vec!["Kush".to_string(), "Kushashwa".to_string()],
-            avatar_links: vec!["https://avatars.githubusercontent.com/u/19997320?v=4".to_string(), "https://media-exp1.licdn.com/dms/image/C4D03AQGiAbH1TT3fNA/profile-displayphoto-shrink_800_800/0/1642226109876?e=2147483647&v=beta&t=fcJojobq-NZv0oNX_WW9RrCsYsoTqz0TSYMcC6zOGco".to_string()],
-            descriptions: vec!["Developer".to_string(), "Developer".to_string()],
-            is_live_status: vec!["true".to_string(), "true".to_string()],
-            subscribers: vec!["100".to_string(), "200".to_string()]
+            names: vec!["Kush", "Kushashwa"].iter().map(|&s|s.into()).collect(),
+            avatar_links: vec!["https://avatars.githubusercontent.com/u/19997320?v=4", "https://media-exp1.licdn.com/dms/image/C4D03AQGiAbH1TT3fNA/profile-displayphoto-shrink_800_800/0/1642226109876?e=2147483647&v=beta&t=fcJojobq-NZv0oNX_WW9RrCsYsoTqz0TSYMcC6zOGco"].iter().map(|&s|s.into()).collect(),
+            descriptions: vec!["Developer", "Developer"].iter().map(|&s|s.into()).collect(),
+            is_live_status: vec!["true", "true"].iter().map(|&s|s.into()).collect(),
+            subscribers: vec!["100", "200"].iter().map(|&s|s.into()).collect()
         };
         assert_eq!(get_json_data(Some("test_assets/sample_data.json")), expected_output);
     }
