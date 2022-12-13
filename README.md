@@ -1,5 +1,7 @@
 # YouTube Monitoring App (using Rust)
 
+![Workflow Status](https://github.com/krshrimali/YouTube-Monitoring-App-Rust-Iced/actions/workflows/build-yt-monitor/badge.svg)
+
 ## Description
 
 **NOTE:**: Another version of this project is present here: https://github.com/krshrimali/youtuber-monitoring-app.
