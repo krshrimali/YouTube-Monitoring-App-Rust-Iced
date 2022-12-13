@@ -95,9 +95,11 @@ impl Sandbox for YTMonitor {
             },
         );
 
-        let content = container(column![choose_theme].spacing(20).padding(20).max_width(600))
-            .width(Length::Fill)
-            .center_x();
+        let content = column![choose_theme]
+            .spacing(20)
+            .padding(20)
+            .max_width(600)
+            .width(Length::Fill);
 
         let footer = render_cards::create_text(
             "Thank you for being here, this was an app by Kushashwa Ravi Shrimali".to_string(),
@@ -136,18 +138,18 @@ impl Sandbox for YTMonitor {
             &all_status,
         );
 
-        container(column![
-            content,
-            horizontal_rule(10),
-            title_header,
-            horizontal_rule(10),
-            first_row,
-            second_row,
-            third_row,
-            horizontal_rule(10),
-            footer,
-            horizontal_rule(10),
-        ])
+        container(
+            column![
+                content,
+                horizontal_rule(10),
+                title_header.height(Length::Shrink),
+                horizontal_rule(10),
+                column![first_row.height(Length::Fill), second_row.height(Length::Fill), third_row.height(Length::Fill)].height(Length::Fill),
+                horizontal_rule(10),
+                footer.height(Length::Shrink),
+                horizontal_rule(10),
+            ]
+        )
         .height(Length::Shrink)
         .into()
     }
