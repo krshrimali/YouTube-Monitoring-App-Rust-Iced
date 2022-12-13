@@ -264,7 +264,9 @@ pub fn create_row(
             .map(|(idx, each_card)| {
                 container(
                     row![
-                        column![create_card(each_card)].padding(20).width(Length::FillPortion(2)),
+                        column![create_card(each_card)]
+                            .padding(20)
+                            .width(Length::FillPortion(2)),
                         column![profile_pic(
                             130,
                             img_handles_row.get(offset + idx).unwrap().to_owned()
