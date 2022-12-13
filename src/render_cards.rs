@@ -9,6 +9,8 @@ use std::io::BufReader;
 
 use std::error::Error;
 
+mod circle_mod;
+
 pub const MAX_EXPECTED_ITEMS: usize = 12;
 const JSON_FILE_PATH: &str = "list_users.json";
 
@@ -261,7 +263,8 @@ pub fn create_row(
                         )]
                         .width(Length::Units(130))
                         .height(Length::Units(150))
-                        .padding(20)
+                        .padding(20),
+                        column![subscriber_circle(/*subscribers=*/ 4)].padding(20),
                     ]
                     .align_items(iced::Alignment::End)
                     .height(Length::Fill),
@@ -297,6 +300,10 @@ pub fn profile_pic<'a>(width: u16, img_handle: image::Handle) -> Container<'a, M
     )
     .width(Length::Fill)
     .center_x()
+}
+
+pub fn subscriber_circle(subscribers: u32) -> circle_mod::Circle {
+    circle_mod::circle(subscribers as f32)
 }
 
 pub fn create_text<'a>(
