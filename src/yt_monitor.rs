@@ -111,11 +111,11 @@ impl Sandbox for YTMonitor {
         let all_photos = self.loaded_photos.to_owned();
 
         let first_row =
-            render_cards::create_row(all_cards.get(0).unwrap_or(&binding), &all_photos, 0);
+            render_cards::create_row(all_cards.get(0).unwrap_or(&binding), &all_photos, 0, &self.theme);
         let second_row =
-            render_cards::create_row(all_cards.get(1).unwrap_or(&binding), &all_photos, 4);
+            render_cards::create_row(all_cards.get(1).unwrap_or(&binding), &all_photos, 4, &self.theme);
         let third_row =
-            render_cards::create_row(all_cards.get(2).unwrap_or(&binding), &all_photos, 8);
+            render_cards::create_row(all_cards.get(2).unwrap_or(&binding), &all_photos, 8, &self.theme);
 
         container(column![
             content,

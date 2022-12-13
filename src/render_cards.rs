@@ -1,4 +1,4 @@
-use iced::theme;
+use iced::theme::{self, Palette};
 // use iced::widget::container::Appearance;
 use iced::widget::{column, container, image, row, text, Column, Container, Row};
 use iced::{Length, Renderer};
@@ -199,24 +199,40 @@ pub fn create_card(card: &Card) -> iced::Element<'static, Message> {
     container(column![text(container_text)]).into()
 }
 
-struct ContainerCustomStyle;
+struct ContainerCustomStyle {
+    curr_theme: theme::Theme,
+}
 
 impl container::StyleSheet for ContainerCustomStyle {
     type Style = theme::Theme;
     fn appearance(&self, _: &iced::Theme) -> container::Appearance {
+        let (text_color, bg) = match &self.curr_theme {
+            iced::Theme::Light => (
+                Color::BLACK,
+                iced_core::Background::Color(Color {
+                    r: 125.0,
+                    g: 125.0,
+                    b: 125.0,
+                    a: 1.0,
+                }),
+            ),
+            iced::Theme::Dark => (
+                Color::WHITE,
+                iced_core::Background::Color(Color {
+                    r: 125.0,
+                    g: 0.0,
+                    b: 125.0,
+                    a: 1.0,
+                }),
+            ),
+            iced::Theme::Custom(_) => (
+                Color::BLACK,
+                iced_core::Background::Color(Color::TRANSPARENT),
+            ),
+        };
         container::Appearance {
-            text_color: Some(Color {
-                r: 255.0,
-                g: 0.0,
-                b: 0.0,
-                a: 1.0,
-            }),
-            background: Some(iced_core::Background::Color(Color {
-                r: 0.0,
-                g: 125.0,
-                b: 125.0,
-                a: 1.0,
-            })),
+            text_color: Some(text_color),
+            background: Some(bg),
             border_radius: 2.0,
             border_width: 2.0,
             border_color: Color {
@@ -233,6 +249,7 @@ pub fn create_row(
     cards: &ListOfCards,
     img_handles_row: &[image::Handle],
     offset: usize,
+    theme: &theme::Theme,
 ) -> Row<'static, Message> {
     Row::with_children(
         cards
@@ -257,7 +274,9 @@ pub fn create_row(
                 .width(Length::Fill)
                 .center_y()
                 .style(iced::theme::Container::Custom(Box::new(
-                    ContainerCustomStyle,
+                    ContainerCustomStyle {
+                        curr_theme: theme.clone(),
+                    },
                 )))
                 .into()
             })
