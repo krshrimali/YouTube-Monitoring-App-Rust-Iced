@@ -1,6 +1,8 @@
 use iced::theme;
+// use iced::widget::container::Appearance;
 use iced::widget::{column, container, image, row, text, Column, Container, Row};
 use iced::{Length, Renderer};
+use iced_core::Color;
 use serde::Deserialize;
 use std::fs::File;
 use std::io::BufReader;
@@ -197,6 +199,36 @@ pub fn create_card(card: &Card) -> iced::Element<'static, Message> {
     container(column![text(container_text)]).into()
 }
 
+struct ContainerCustomStyle;
+
+impl container::StyleSheet for ContainerCustomStyle {
+    type Style = theme::Theme;
+    fn appearance(&self, _: &iced::Theme) -> container::Appearance {
+        container::Appearance {
+            text_color: Some(Color {
+                r: 255.0,
+                g: 0.0,
+                b: 0.0,
+                a: 1.0,
+            }),
+            background: Some(iced_core::Background::Color(Color {
+                r: 0.0,
+                g: 125.0,
+                b: 125.0,
+                a: 1.0,
+            })),
+            border_radius: 2.0,
+            border_width: 2.0,
+            border_color: Color {
+                r: 0.0,
+                g: 255.0,
+                b: 0.0,
+                a: 1.0,
+            },
+        }
+    }
+}
+
 pub fn create_row(
     cards: &ListOfCards,
     img_handles_row: &[image::Handle],
@@ -224,7 +256,9 @@ pub fn create_row(
                 )
                 .width(Length::Fill)
                 .center_y()
-                .style(theme::Container::Box)
+                .style(iced::theme::Container::Custom(Box::new(
+                    ContainerCustomStyle,
+                )))
                 .into()
             })
             .collect(),
