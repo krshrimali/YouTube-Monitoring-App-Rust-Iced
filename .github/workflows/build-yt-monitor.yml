@@ -1,3 +1,4 @@
+# Source: https://github.com/marketplace/actions/setup-rust
 name: YouTube Monitor App
 
 on:
@@ -7,33 +8,51 @@ on:
       - main
 
 jobs:
-  ubuntu:
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v2
-
-      - name: setup-system
-        run:
-          sudo apt update && sudo apt -y upgrade && sudo apt-get -y install build-essential libfontconfig-dev pkg-config fontconfig cmake curl
-          curl https://sh.rustup.rs -sSf | sh
-
-      - name: Build App
-        run: cargo build && cargo run --release
-
-      - name: Run Tests
-        run: cargo test
-
-  mac-os:
-    runs-on: macos-12
-
+      - name: Setup | Checkout
+        uses: actions/checkout@v2
+      - name: Setup | Rust
+        uses: ATiltedTree/setup-rust@v1
+        with:
+          rust-version: stable
+          components: clippy
+      - name: Build | Lint
+        run: cargo clippy
+  compile:
+    name: Compile
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: setup-system
-        run: curl https://sh.rustup.rs -sSf | sh
-
-      - name: Build App
-        run: cargo build && cargo run --release
-
-      - name: Run Tests
+      - name: Setup | Checkout
+        uses: actions/checkout@v2
+      - name: Setup | Rust
+        uses: ATiltedTree/setup-rust@v1
+        with:
+          rust-version: stable
+      - name: Build | Compile
+        run: cargo check
+  test:
+    name: Test
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+          - macOS-latest
+        rust:
+          - stable
+          - beta
+          - nightly
+    runs-on: ${{ matrix.os }}
+    needs: [compile]
+    steps:
+      - name: Setup | Checkout
+        uses: actions/checkout@v2
+      - name: Setup | Rust
+        uses: ATiltedTree/setup-rust@v1
+        with:
+          rust-version: ${{ matrix.rust }}
+      - name: Build | Compile
         run: cargo test
