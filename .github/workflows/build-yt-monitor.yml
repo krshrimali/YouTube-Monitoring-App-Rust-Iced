@@ -1,0 +1,39 @@
+name: YouTube Monitor App
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  ubuntu:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: setup-system
+        run:
+          sudo apt-get install build-essential libfontconfig-dev pkg-config fontconfig cmake && \
+          curl https://sh.rustup.rs -sSf | sh
+
+      - name: Build App
+        run: cargo build && cargo run --release
+
+      - name: Run Tests
+        run: cargo test
+
+  mac-os:
+    runs-on: macos-12
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: setup-system
+        run: brew install cmake && curl https://sh.rustup.rs -sSf | sh
+
+      - name: Build App
+        run: cargo build && cargo run --release
+
+      - name: Run Tests
+        run: cargo test
