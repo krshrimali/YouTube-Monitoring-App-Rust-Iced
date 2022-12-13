@@ -55,7 +55,7 @@ macro_rules! get_struct_names {
             // }
             fn slice_to(&self, count_items: usize) -> YTCreator {
                 YTCreator {
-                    $($fname: self.$fname.get(0..count_items).unwrap().to_vec()),
+                    $($fname: self.$fname.get(0..count_items).expect(&format!("Not enough elements to be sliced into, maybe check the input {count_items} again.")).to_vec()),
                     *
                 }
             }
@@ -333,5 +333,31 @@ mod test {
             .avatar_links
             .push("wrong_link".to_string());
         get_all_avatars(&sample_data_yt_creator);
+    }
+
+    #[test]
+    fn test_yt_creator_slice_to() {
+        let yt_creator_mock: YTCreator = get_json_data(Some("test_assets/sample_data.json"));
+        assert_eq!(yt_creator_mock.slice_to(1).size(), 1);
+    }
+
+    #[test]
+    #[should_panic(expected = "Not enough elements to be sliced into")]
+    fn test_yt_creator_slice_to_more_than_existing() {
+        let yt_creator_mock: YTCreator = get_json_data(Some("test_assets/sample_data.json"));
+        yt_creator_mock.slice_to(3);
+    }
+
+    #[test]
+    fn test_yt_creator_slice_to_on_empty_valid() {
+        let yt_creator_mock: YTCreator = get_json_data(Some("test_assets/empty_data.json"));
+        assert_eq!(yt_creator_mock.slice_to(0).size(), 0);
+    }
+
+    #[test]
+    #[should_panic(expected = "Not enough elements to be sliced into")]
+    fn test_yt_creator_slice_to_on_empty_invalid() {
+        let yt_creator_mock: YTCreator = get_json_data(Some("test_assets/empty_data.json"));
+        assert_eq!(yt_creator_mock.slice_to(2).size(), 0);
     }
 }
