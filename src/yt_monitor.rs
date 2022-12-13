@@ -37,7 +37,7 @@ impl Sandbox for YTMonitor {
     type Message = render_cards::Message;
 
     fn new() -> YTMonitor {
-        let json_obj = render_cards::get_json_data();
+        let json_obj = render_cards::get_json_data(None);
         let image_handles = render_cards::get_all_avatars(&json_obj);
         // Because dark as default is cool :D
         YTMonitor {

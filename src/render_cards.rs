@@ -41,7 +41,7 @@ macro_rules! get_struct_names {
 }
 
 get_struct_names! {
-    #[derive(Deserialize, Debug, Default, Clone)]
+    #[derive(Deserialize, Debug, Default, Clone, PartialEq, Eq)]
     pub struct YTCreator {
         names: Vec<String>,
         avatar_links: Vec<String>,
@@ -258,8 +258,9 @@ pub fn create_text<'a>(
         .center_y()
 }
 
-pub fn get_json_data() -> YTCreator {
-    let obj = read_json(JSON_FILE_PATH).unwrap();
+pub fn get_json_data(json_path: Option<&str>) -> YTCreator {
+    let json_file_path = json_path.unwrap_or(JSON_FILE_PATH);
+    let obj = read_json(json_file_path).unwrap();
     obj
 }
 
@@ -270,11 +271,54 @@ pub fn get_all_avatars(json_obj: &YTCreator) -> Vec<image::Handle> {
         let img_bytes = match img_obj {
             Some(bytes) => bytes.bytes().ok(),
             None => None,
-        }
-        .unwrap();
-        let out_img: image::Handle = image::Handle::from_memory(img_bytes.to_vec());
+        };
+        let out_img: image::Handle = image::Handle::from_memory(img_bytes.expect("Probably the image wasn't read successfully. Please check the avatar link again").to_vec());
         out_handles.push(out_img);
     }
 
     out_handles
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_get_json_data_valid_file() {
+        let expected_output: YTCreator = YTCreator {
+            names: vec!["Kush", "Kushashwa"].iter().map(|&s|s.into()).collect(),
+            avatar_links: vec!["https://avatars.githubusercontent.com/u/19997320?v=4", "https://media-exp1.licdn.com/dms/image/C4D03AQGiAbH1TT3fNA/profile-displayphoto-shrink_800_800/0/1642226109876?e=2147483647&v=beta&t=fcJojobq-NZv0oNX_WW9RrCsYsoTqz0TSYMcC6zOGco"].iter().map(|&s|s.into()).collect(),
+            descriptions: vec!["Developer", "Developer"].iter().map(|&s|s.into()).collect(),
+            is_live_status: vec!["true", "true"].iter().map(|&s|s.into()).collect(),
+            subscribers: vec!["100", "200"].iter().map(|&s|s.into()).collect()
+        };
+        assert_eq!(get_json_data(Some("test_assets/sample_data.json")), expected_output);
+    }
+
+    #[test]
+    #[should_panic(expected="No such file or directory")]
+    fn test_get_json_data_invalid_file() {
+        get_json_data(Some("invalid_files.json"));
+    }
+
+    #[test]
+    fn test_get_all_avatars_valid() {
+        let sample_data_yt_creator: YTCreator = get_json_data(Some("test_assets/sample_data.json"));
+        assert!(!get_all_avatars(&sample_data_yt_creator).is_empty());
+    }
+
+    #[test]
+    fn test_get_all_avatars_empty_data() {
+        let sample_data_yt_creator: YTCreator = get_json_data(Some("test_assets/empty_data.json"));
+        assert!(get_all_avatars(&sample_data_yt_creator).is_empty());
+    }
+
+    #[test]
+    #[should_panic(expected="wasn't read successfully")]
+    fn test_get_all_avatars_invalid_data() {
+        let mut sample_data_yt_creator: YTCreator = get_json_data(Some("test_assets/sample_data.json"));
+        sample_data_yt_creator.avatar_links.pop();
+        sample_data_yt_creator.avatar_links.push("wrong_link".to_string());
+        get_all_avatars(&sample_data_yt_creator);
+    }
 }
