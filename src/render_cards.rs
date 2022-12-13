@@ -204,9 +204,19 @@ struct ContainerCustomStyle {
 }
 
 const DARK_BACKGROUND_LIVE: Option<iced_core::Background> =
-    Some(iced_core::Background::Color(Color::WHITE));
+    Some(iced_core::Background::Color(Color {
+        r: 255.0,
+        g: 255.0,
+        b: 255.0,
+        a: 0.7
+    }));
 const LIGHT_BACKGROUND_LIVE: Option<iced_core::Background> =
-    Some(iced_core::Background::Color(Color::BLACK));
+    Some(iced_core::Background::Color(Color {
+        r: 0.0,
+        g: 0.0,
+        b: 0.0,
+        a: 0.9
+    }));
 
 impl container::StyleSheet for ContainerCustomStyle {
     type Style = theme::Theme;
