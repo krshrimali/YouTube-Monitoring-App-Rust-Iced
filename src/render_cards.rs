@@ -31,7 +31,7 @@ macro_rules! get_struct_names {
                 NAMES
             }
 
-            fn get_field(&self, field_name: &str) -> Option<&Vec<String>> {
+            pub fn get_field(&self, field_name: &str) -> Option<&Vec<String>> {
                 match field_name {
                     $(stringify!($fname) => Some(&self.$fname)),
                     *,
@@ -348,9 +348,10 @@ pub fn get_all_avatars(json_obj: &YTCreator) -> Vec<image::Handle> {
     out_handles
 }
 
-pub fn get_live_status(json_obj: &YTCreator) -> Vec<bool> {
+pub fn get_live_status(live_status: Option<&Vec<String>>) -> Vec<bool> {
     let mut out_status: Vec<bool> = Vec::new();
-    for status in &json_obj.is_live_status {
+    let status_as_strings = live_status.expect("Didn't find any data in is_live_status field.");
+    for status in status_as_strings {
         let _true_str = String::from("true");
         let _false_str = String::from("false");
         let bool_output: bool = status.trim().parse().unwrap();
@@ -430,7 +431,7 @@ mod test {
             names: vec!["Kush", "Kushashwa"].iter().map(|&s|s.into()).collect(),
             avatar_links: vec!["https://avatars.githubusercontent.com/u/19997320?v=4", "https://media-exp1.licdn.com/dms/image/C4D03AQGiAbH1TT3fNA/profile-displayphoto-shrink_800_800/0/1642226109876?e=2147483647&v=beta&t=fcJojobq-NZv0oNX_WW9RrCsYsoTqz0TSYMcC6zOGco"].iter().map(|&s|s.into()).collect(),
             descriptions: vec!["Developer", "Developer"].iter().map(|&s|s.into()).collect(),
-            is_live_status: vec!["true", "true"].iter().map(|&s|s.into()).collect(),
+            is_live_status: vec!["true", "false"].iter().map(|&s|s.into()).collect(),
             subscribers: vec!["100", "200"].iter().map(|&s|s.into()).collect()
         };
         assert_eq!(
@@ -467,6 +468,30 @@ mod test {
             .avatar_links
             .push("wrong_link".to_string());
         get_all_avatars(&sample_data_yt_creator);
+    }
+
+    #[test]
+    fn test_get_live_status_valid() {
+        let sample_data_yt_creator: YTCreator = get_json_data(Some("test_assets/sample_data.json"));
+        assert_eq!(
+            get_live_status(Some(&sample_data_yt_creator.is_live_status)),
+            vec![true, false]
+        );
+    }
+
+    #[test]
+    fn test_get_live_status_empty() {
+        let sample_data_yt_creator: YTCreator = get_json_data(Some("test_assets/empty_data.json"));
+        assert_eq!(
+            get_live_status(Some(&sample_data_yt_creator.is_live_status)).len(),
+            0
+        );
+    }
+
+    #[test]
+    #[should_panic(expected = "Didn't find any data in is_live_status field.")]
+    fn test_get_live_status_invalid() {
+        get_live_status(None);
     }
 
     #[test]
