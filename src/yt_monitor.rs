@@ -114,12 +114,27 @@ impl Sandbox for YTMonitor {
         let all_photos = self.loaded_photos.to_owned();
         let all_status = self.live_status.to_owned();
 
-        let first_row =
-            render_cards::create_row(all_cards.get(0).unwrap_or(&binding), &all_photos, 0, &self.theme, &all_status);
-        let second_row =
-            render_cards::create_row(all_cards.get(1).unwrap_or(&binding), &all_photos, 4, &self.theme, &all_status);
-        let third_row =
-            render_cards::create_row(all_cards.get(2).unwrap_or(&binding), &all_photos, 8, &self.theme, &all_status);
+        let first_row = render_cards::create_row(
+            all_cards.get(0).unwrap_or(&binding),
+            &all_photos,
+            0,
+            &self.theme,
+            &all_status,
+        );
+        let second_row = render_cards::create_row(
+            all_cards.get(1).unwrap_or(&binding),
+            &all_photos,
+            4,
+            &self.theme,
+            &all_status,
+        );
+        let third_row = render_cards::create_row(
+            all_cards.get(2).unwrap_or(&binding),
+            &all_photos,
+            8,
+            &self.theme,
+            &all_status,
+        );
 
         container(column![
             content,
