@@ -15,7 +15,7 @@ jobs:
 
       - name: setup-system
         run:
-          sudo apt update && sudo apt -y upgrade && sudo apt-get -y install build-essential libfontconfig-dev pkg-config fontconfig cmake curl && \
+          sudo apt update && sudo apt -y upgrade && sudo apt-get -y install build-essential libfontconfig-dev pkg-config fontconfig cmake curl
           curl https://sh.rustup.rs -sSf | sh
 
       - name: Build App
@@ -30,7 +30,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: setup-system
-        run: brew install curl cmake && curl https://sh.rustup.rs -sSf | sh
+        run: curl https://sh.rustup.rs -sSf | sh
 
       - name: Build App
         run: cargo build && cargo run --release
