@@ -1,6 +1,8 @@
-use iced::theme;
+use iced::theme::{self, Palette};
+// use iced::widget::container::Appearance;
 use iced::widget::{column, container, image, row, text, Column, Container, Row};
 use iced::{Length, Renderer};
+use iced_core::Color;
 use serde::Deserialize;
 use std::fs::File;
 use std::io::BufReader;
@@ -76,7 +78,6 @@ get_struct_names! {
 
 impl YTCreator {
     fn size(&self) -> usize {
-        // println!("Field names: {:?}", YTCreator::field_names());
         let mut lengths_all: Vec<usize> = vec![];
         let mut msges: String = "".to_string();
         for field_name in YTCreator::field_names().iter() {
@@ -197,10 +198,63 @@ pub fn create_card(card: &Card) -> iced::Element<'static, Message> {
     container(column![text(container_text)]).into()
 }
 
+struct ContainerCustomStyle {
+    curr_theme: theme::Theme,
+    curr_live_status: bool,
+}
+
+const DARK_BACKGROUND_LIVE: Option<iced_core::Background> =
+    Some(iced_core::Background::Color(Color {
+        r: 0.0,
+        g: 125.0,
+        b: 0.0,
+        a: 1.0,
+    }));
+const LIGHT_BACKGROUND_LIVE: Option<iced_core::Background> =
+    Some(iced_core::Background::Color(Color {
+        r: 255.0,
+        g: 0.0,
+        b: 0.0,
+        a: 1.0,
+    }));
+
+impl container::StyleSheet for ContainerCustomStyle {
+    type Style = theme::Theme;
+    fn appearance(&self, _: &iced::Theme) -> container::Appearance {
+        let (text_color, bg) = match &self.curr_live_status {
+            true => match &self.curr_theme {
+                iced::Theme::Light => (Color::WHITE, LIGHT_BACKGROUND_LIVE),
+                iced::Theme::Dark => (Color::BLACK, DARK_BACKGROUND_LIVE),
+                iced::Theme::Custom(_) => (
+                    Color::BLACK,
+                    Some(iced_core::Background::Color(Color::TRANSPARENT)),
+                ),
+            },
+            false => match &self.curr_theme {
+                iced::Theme::Light => (Color::BLACK, None),
+                iced::Theme::Dark => (Color::WHITE, None),
+                iced::Theme::Custom(_) => (
+                    Color::BLACK,
+                    Some(iced_core::Background::Color(Color::TRANSPARENT)),
+                ),
+            },
+        };
+        container::Appearance {
+            text_color: Some(text_color),
+            background: bg,
+            border_radius: 2.0,
+            border_width: 2.0,
+            border_color: Color::TRANSPARENT,
+        }
+    }
+}
+
 pub fn create_row(
     cards: &ListOfCards,
     img_handles_row: &[image::Handle],
     offset: usize,
+    theme: &theme::Theme,
+    status: &[bool],
 ) -> Row<'static, Message> {
     Row::with_children(
         cards
@@ -224,7 +278,12 @@ pub fn create_row(
                 )
                 .width(Length::Fill)
                 .center_y()
-                .style(theme::Container::Box)
+                .style(iced::theme::Container::Custom(Box::new(
+                    ContainerCustomStyle {
+                        curr_theme: theme.clone(),
+                        curr_live_status: *status.get(idx + offset).unwrap(),
+                    },
+                )))
                 .into()
             })
             .collect(),
@@ -287,6 +346,17 @@ pub fn get_all_avatars(json_obj: &YTCreator) -> Vec<image::Handle> {
     }
 
     out_handles
+}
+
+pub fn get_live_status(json_obj: &YTCreator) -> Vec<bool> {
+    let mut out_status: Vec<bool> = Vec::new();
+    for status in &json_obj.is_live_status {
+        let _true_str = String::from("true");
+        let _false_str = String::from("false");
+        let bool_output: bool = status.trim().parse().unwrap();
+        out_status.push(bool_output);
+    }
+    out_status
 }
 
 #[cfg(test)]

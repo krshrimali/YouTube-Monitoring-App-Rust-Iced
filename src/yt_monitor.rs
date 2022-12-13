@@ -9,6 +9,7 @@ pub struct YTMonitor {
     theme: Theme,
     json_obj: render_cards::YTCreator,
     loaded_photos: Vec<image::Handle>,
+    live_status: Vec<bool>,
 }
 
 // TODO: Make two separable users for female and males
@@ -39,11 +40,13 @@ impl Sandbox for YTMonitor {
     fn new() -> YTMonitor {
         let json_obj = render_cards::get_json_data(None);
         let image_handles = render_cards::get_all_avatars(&json_obj);
+        let statuses = render_cards::get_live_status(&json_obj);
         // Because dark as default is cool :D
         YTMonitor {
             theme: Theme::Dark,
             json_obj,
             loaded_photos: image_handles,
+            live_status: statuses,
         }
     }
 
@@ -109,13 +112,29 @@ impl Sandbox for YTMonitor {
         let all_cards = render_cards::create_list_of_cards(&self.json_obj);
         let binding = render_cards::ListOfCards::default();
         let all_photos = self.loaded_photos.to_owned();
+        let all_status = self.live_status.to_owned();
 
-        let first_row =
-            render_cards::create_row(all_cards.get(0).unwrap_or(&binding), &all_photos, 0);
-        let second_row =
-            render_cards::create_row(all_cards.get(1).unwrap_or(&binding), &all_photos, 4);
-        let third_row =
-            render_cards::create_row(all_cards.get(2).unwrap_or(&binding), &all_photos, 8);
+        let first_row = render_cards::create_row(
+            all_cards.get(0).unwrap_or(&binding),
+            &all_photos,
+            0,
+            &self.theme,
+            &all_status,
+        );
+        let second_row = render_cards::create_row(
+            all_cards.get(1).unwrap_or(&binding),
+            &all_photos,
+            4,
+            &self.theme,
+            &all_status,
+        );
+        let third_row = render_cards::create_row(
+            all_cards.get(2).unwrap_or(&binding),
+            &all_photos,
+            8,
+            &self.theme,
+            &all_status,
+        );
 
         container(column![
             content,
