@@ -208,14 +208,14 @@ const DARK_BACKGROUND_LIVE: Option<iced_core::Background> =
         r: 255.0,
         g: 255.0,
         b: 255.0,
-        a: 0.7
+        a: 0.7,
     }));
 const LIGHT_BACKGROUND_LIVE: Option<iced_core::Background> =
     Some(iced_core::Background::Color(Color {
         r: 0.0,
         g: 0.0,
         b: 0.0,
-        a: 0.9
+        a: 0.9,
     }));
 
 impl container::StyleSheet for ContainerCustomStyle {
@@ -264,16 +264,18 @@ pub fn create_row(
             .map(|(idx, each_card)| {
                 container(
                     row![
-                        column![create_card(each_card)].spacing(50).padding(20),
+                        column![create_card(each_card)]
+                            .padding(20)
+                            .width(Length::FillPortion(2)),
                         column![profile_pic(
                             130,
                             img_handles_row.get(offset + idx).unwrap().to_owned()
                         )]
-                        .width(Length::Units(130))
+                        .width(Length::FillPortion(1))
                         .height(Length::Units(150))
                         .padding(20)
                     ]
-                    .align_items(iced::Alignment::End)
+                    .align_items(iced::Alignment::Center)
                     .height(Length::Fill),
                 )
                 .width(Length::Fill)
