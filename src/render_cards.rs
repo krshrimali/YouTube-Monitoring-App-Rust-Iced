@@ -36,6 +36,29 @@ macro_rules! get_struct_names {
                     &_ => None
                 }
             }
+
+            // Just keeping it here for later to answer: why I created macro for this...
+            // fn slice_to(&self, count_items: usize) -> YTCreator {
+            //     let mut new_obj = YTCreator {
+            //         names: Vec::new(),
+            //         avatar_links: Vec::new(),
+            //         descriptions: Vec::new(),
+            //         is_live_status: Vec::new(),
+            //         subscribers: Vec::new(),
+            //     };
+            //     new_obj.names = self.names.get(0..count_items).unwrap().to_vec();
+            //     new_obj.avatar_links = self.avatar_links.get(0..count_items).unwrap().to_vec();
+            //     new_obj.descriptions = self.descriptions.get(0..count_items).unwrap().to_vec();
+            //     new_obj.is_live_status = self.is_live_status.get(0..count_items).unwrap().to_vec();
+            //     new_obj.subscribers = self.subscribers.get(0..count_items).unwrap().to_vec();
+            //     new_obj
+            // }
+            fn slice_to(&self, count_items: usize) -> YTCreator {
+                YTCreator {
+                    $($fname: self.$fname.get(0..count_items).unwrap().to_vec()),
+                    *
+                }
+            }
         }
     }
 }
@@ -75,22 +98,6 @@ impl YTCreator {
             .windows(2)
             .all(|single_len| single_len[0] == single_len[1]));
         self.names.len()
-    }
-
-    fn slice_to(&self, count_items: usize) -> YTCreator {
-        let mut new_obj = YTCreator {
-            names: Vec::new(),
-            avatar_links: Vec::new(),
-            descriptions: Vec::new(),
-            is_live_status: Vec::new(),
-            subscribers: Vec::new(),
-        };
-        new_obj.names = self.names.get(0..count_items).unwrap().to_vec();
-        new_obj.avatar_links = self.avatar_links.get(0..count_items).unwrap().to_vec();
-        new_obj.descriptions = self.descriptions.get(0..count_items).unwrap().to_vec();
-        new_obj.is_live_status = self.is_live_status.get(0..count_items).unwrap().to_vec();
-        new_obj.subscribers = self.subscribers.get(0..count_items).unwrap().to_vec();
-        new_obj
     }
 }
 
@@ -292,11 +299,14 @@ mod test {
             is_live_status: vec!["true", "true"].iter().map(|&s|s.into()).collect(),
             subscribers: vec!["100", "200"].iter().map(|&s|s.into()).collect()
         };
-        assert_eq!(get_json_data(Some("test_assets/sample_data.json")), expected_output);
+        assert_eq!(
+            get_json_data(Some("test_assets/sample_data.json")),
+            expected_output
+        );
     }
 
     #[test]
-    #[should_panic(expected="No such file or directory")]
+    #[should_panic(expected = "No such file or directory")]
     fn test_get_json_data_invalid_file() {
         get_json_data(Some("invalid_files.json"));
     }
@@ -314,11 +324,14 @@ mod test {
     }
 
     #[test]
-    #[should_panic(expected="wasn't read successfully")]
+    #[should_panic(expected = "wasn't read successfully")]
     fn test_get_all_avatars_invalid_data() {
-        let mut sample_data_yt_creator: YTCreator = get_json_data(Some("test_assets/sample_data.json"));
+        let mut sample_data_yt_creator: YTCreator =
+            get_json_data(Some("test_assets/sample_data.json"));
         sample_data_yt_creator.avatar_links.pop();
-        sample_data_yt_creator.avatar_links.push("wrong_link".to_string());
+        sample_data_yt_creator
+            .avatar_links
+            .push("wrong_link".to_string());
         get_all_avatars(&sample_data_yt_creator);
     }
 }
