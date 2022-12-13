@@ -78,7 +78,6 @@ get_struct_names! {
 
 impl YTCreator {
     fn size(&self) -> usize {
-        // println!("Field names: {:?}", YTCreator::field_names());
         let mut lengths_all: Vec<usize> = vec![];
         let mut msges: String = "".to_string();
         for field_name in YTCreator::field_names().iter() {
@@ -201,46 +200,49 @@ pub fn create_card(card: &Card) -> iced::Element<'static, Message> {
 
 struct ContainerCustomStyle {
     curr_theme: theme::Theme,
+    curr_live_status: bool,
 }
+
+const DARK_BACKGROUND_LIVE: Option<iced_core::Background> = Some(iced_core::Background::Color(Color {
+    r: 0.0,
+    g: 125.0,
+    b: 0.0,
+    a: 1.0,
+}));
+const LIGHT_BACKGROUND_LIVE: Option<iced_core::Background> = Some(iced_core::Background::Color(Color {
+    r: 255.0,
+    g: 0.0,
+    b: 0.0,
+    a: 1.0,
+}));
 
 impl container::StyleSheet for ContainerCustomStyle {
     type Style = theme::Theme;
     fn appearance(&self, _: &iced::Theme) -> container::Appearance {
-        let (text_color, bg) = match &self.curr_theme {
-            iced::Theme::Light => (
-                Color::BLACK,
-                iced_core::Background::Color(Color {
-                    r: 125.0,
-                    g: 125.0,
-                    b: 125.0,
-                    a: 1.0,
-                }),
-            ),
-            iced::Theme::Dark => (
-                Color::WHITE,
-                iced_core::Background::Color(Color {
-                    r: 125.0,
-                    g: 0.0,
-                    b: 125.0,
-                    a: 1.0,
-                }),
-            ),
-            iced::Theme::Custom(_) => (
-                Color::BLACK,
-                iced_core::Background::Color(Color::TRANSPARENT),
-            ),
+        let (text_color, bg) = match &self.curr_live_status {
+            true => match &self.curr_theme {
+                iced::Theme::Light => (Color::WHITE, LIGHT_BACKGROUND_LIVE),
+                iced::Theme::Dark => (Color::BLACK, DARK_BACKGROUND_LIVE),
+                iced::Theme::Custom(_) => (
+                    Color::BLACK,
+                    Some(iced_core::Background::Color(Color::TRANSPARENT)),
+                ),
+            },
+            false => match &self.curr_theme {
+                iced::Theme::Light => (Color::BLACK, None),
+                iced::Theme::Dark => (Color::WHITE, None),
+                iced::Theme::Custom(_) => (
+                    Color::BLACK,
+                    Some(iced_core::Background::Color(Color::TRANSPARENT)),
+                ),
+            },
         };
         container::Appearance {
             text_color: Some(text_color),
-            background: Some(bg),
+            background: bg,
             border_radius: 2.0,
             border_width: 2.0,
-            border_color: Color {
-                r: 0.0,
-                g: 255.0,
-                b: 0.0,
-                a: 1.0,
-            },
+            border_color: Color::TRANSPARENT,
         }
     }
 }
@@ -250,6 +252,7 @@ pub fn create_row(
     img_handles_row: &[image::Handle],
     offset: usize,
     theme: &theme::Theme,
+    status: &[bool],
 ) -> Row<'static, Message> {
     Row::with_children(
         cards
@@ -276,6 +279,7 @@ pub fn create_row(
                 .style(iced::theme::Container::Custom(Box::new(
                     ContainerCustomStyle {
                         curr_theme: theme.clone(),
+                        curr_live_status: *status.get(idx + offset).unwrap(),
                     },
                 )))
                 .into()
@@ -340,6 +344,17 @@ pub fn get_all_avatars(json_obj: &YTCreator) -> Vec<image::Handle> {
     }
 
     out_handles
+}
+
+pub fn get_live_status(json_obj: &YTCreator) -> Vec<bool> {
+    let mut out_status: Vec<bool> = Vec::new();
+    for status in &json_obj.is_live_status {
+        let _true_str = String::from("true");
+        let _false_str = String::from("false");
+        let bool_output: bool = status.trim().parse().unwrap();
+        out_status.push(bool_output);
+    }
+    out_status
 }
 
 #[cfg(test)]
