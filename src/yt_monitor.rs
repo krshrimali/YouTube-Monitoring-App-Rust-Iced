@@ -40,7 +40,7 @@ impl Sandbox for YTMonitor {
     fn new() -> YTMonitor {
         let json_obj = render_cards::get_json_data(None);
         let image_handles = render_cards::get_all_avatars(&json_obj);
-        let statuses = render_cards::get_live_status(&json_obj);
+        let statuses = render_cards::get_live_status(json_obj.get_field("is_live_status"));
         // Because dark as default is cool :D
         YTMonitor {
             theme: Theme::Dark,
