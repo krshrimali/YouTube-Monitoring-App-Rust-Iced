@@ -1,4 +1,4 @@
-use iced::theme::{self, Palette};
+use iced::theme;
 // use iced::widget::container::Appearance;
 use iced::widget::{column, container, image, row, text, Column, Container, Row};
 use iced::{Length, Renderer};
@@ -204,19 +204,9 @@ struct ContainerCustomStyle {
 }
 
 const DARK_BACKGROUND_LIVE: Option<iced_core::Background> =
-    Some(iced_core::Background::Color(Color {
-        r: 0.0,
-        g: 125.0,
-        b: 0.0,
-        a: 1.0,
-    }));
+    Some(iced_core::Background::Color(Color::WHITE));
 const LIGHT_BACKGROUND_LIVE: Option<iced_core::Background> =
-    Some(iced_core::Background::Color(Color {
-        r: 255.0,
-        g: 0.0,
-        b: 0.0,
-        a: 1.0,
-    }));
+    Some(iced_core::Background::Color(Color::BLACK));
 
 impl container::StyleSheet for ContainerCustomStyle {
     type Style = theme::Theme;
