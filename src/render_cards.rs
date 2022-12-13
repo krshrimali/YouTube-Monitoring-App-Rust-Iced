@@ -94,9 +94,12 @@ impl YTCreator {
         if !msges.is_empty() {
             panic!("Found more items than expected. {msges}");
         }
-        assert!(lengths_all
-            .windows(2)
-            .all(|single_len| single_len[0] == single_len[1]));
+        assert!(
+            lengths_all
+                .windows(2)
+                .all(|single_len| single_len[0] == single_len[1]),
+            "Not all fields have equal length. Check the input data again."
+        );
         self.names.len()
     }
 }
@@ -289,6 +292,67 @@ pub fn get_all_avatars(json_obj: &YTCreator) -> Vec<image::Handle> {
 #[cfg(test)]
 mod test {
     use super::*;
+
+    // Testing YTCreator struct methods
+    #[test]
+    fn test_yt_creator_size_empty() {
+        let mock_yt_creator = YTCreator::default();
+        assert_eq!(mock_yt_creator.size(), 0);
+    }
+
+    #[test]
+    fn test_yt_creator_size_non_empty() {
+        let mock_yt_creator = YTCreator {
+            names: vec!["Kush".to_string()],
+            avatar_links: vec!["sample".to_string()],
+            descriptions: vec!["Dev".to_string()],
+            is_live_status: vec!["true".to_string()],
+            subscribers: vec!["200".to_string()],
+        };
+        assert_eq!(mock_yt_creator.size(), 1);
+    }
+
+    #[test]
+    #[should_panic(expected = "Not all fields have equal length")]
+    fn test_yt_creator_size_invalid() {
+        YTCreator {
+            names: vec!["Kush".to_string(), "Another".to_string()],
+            avatar_links: vec!["sample".to_string()],
+            descriptions: vec!["Dev".to_string(), "Another".to_string()],
+            is_live_status: vec!["true".to_string()],
+            subscribers: vec!["200".to_string()],
+        }
+        .size();
+    }
+
+    #[test]
+    fn test_yt_creator_get_field_names() {
+        assert_eq!(
+            YTCreator::field_names(),
+            vec![
+                "names",
+                "avatar_links",
+                "descriptions",
+                "is_live_status",
+                "subscribers"
+            ]
+        );
+    }
+
+    #[test]
+    fn test_yt_creator_get_field() {
+        let mock_yt_creator = get_json_data(Some("test_assets/sample_data.json"));
+        let output_names = mock_yt_creator.get_field("names");
+        assert!(output_names.is_some());
+        // Testing for just one field is enough IMO
+        assert_eq!(output_names.unwrap(), &vec!["Kush", "Kushashwa"]);
+    }
+
+    #[test]
+    fn test_yt_creator_get_field_invalid() {
+        let mock_yt_creator = get_json_data(Some("test_assets/sample_data.json"));
+        assert!(mock_yt_creator.get_field("doesn't_exist").is_none());
+    }
 
     #[test]
     fn test_get_json_data_valid_file() {
