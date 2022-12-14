@@ -84,11 +84,9 @@ impl YTCreator {
             let len_field: usize = self.get_field(field_name).unwrap().len();
             lengths_all.push(len_field);
             if len_field > MAX_EXPECTED_ITEMS {
-                let msg = format!(
-                    "Found: {} but got {} for the given field_name: {}\n",
-                    len_field, MAX_EXPECTED_ITEMS, field_name
-                );
-                msges += &msg;
+                msges += format!(
+                    "Found: {len_field} but got {MAX_EXPECTED_ITEMS} for the given field_name: {field_name}\n"
+                ).as_str();
             };
         }
 
