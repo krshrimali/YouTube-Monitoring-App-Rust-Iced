@@ -272,7 +272,6 @@ pub fn create_row(
                             img_handles_row.get(offset + idx).unwrap().to_owned()
                         )]
                         .width(Length::FillPortion(1))
-                        // .height(Length::Units(150))
                         .padding(20)
                     ]
                     .align_items(iced::Alignment::Center)
