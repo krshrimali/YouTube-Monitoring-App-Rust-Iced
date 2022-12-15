@@ -270,7 +270,6 @@ pub fn create_row(
                             img_handles_row.get(offset + idx).unwrap().to_owned()
                         )]
                         .width(Length::FillPortion(1))
-                        .height(Length::Units(150))
                         .padding(20)
                     ]
                     .align_items(iced::Alignment::Center)
@@ -324,7 +323,6 @@ pub fn create_text<'a>(
         .width(Length::Fill)
         .height(Length::Fill)
         .center_x()
-        .center_y()
 }
 
 pub fn get_json_data(json_path: Option<&str>) -> YTCreator {
