@@ -18,7 +18,7 @@ macro_rules! get_struct_names {
     (
         #[derive($($derive_name:ident),*)]
         pub struct $name:ident {
-            $($fname:ident : $ftype:ty), *
+            $(pub $fname:ident : $ftype:ty), *
         }
     ) => {
         #[derive($($derive_name),*)]
@@ -64,17 +64,24 @@ macro_rules! get_struct_names {
 get_struct_names! {
     #[derive(Deserialize, Debug, Default, Clone, PartialEq, Eq)]
     pub struct YTCreator {
-        names: Vec<String>,
-        avatar_links: Vec<String>,
-        descriptions: Vec<String>,
-        is_live_status: Vec<String>,
-        subscribers: Vec<String>
+        pub names: Vec<String>,
+        pub avatar_links: Vec<String>,
+        pub descriptions: Vec<String>,
+        pub is_live_status: Vec<String>,
+        pub subscribers: Vec<String>
     }
 }
 
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub enum AllowedFieldNamesForSorting {
     Subscribers,
     IsLiveStatus,
+}
+
+impl Default for AllowedFieldNamesForSorting {
+    fn default() -> Self {
+        AllowedFieldNamesForSorting::Subscribers
+    }
 }
 
 impl YTCreator {
@@ -107,7 +114,7 @@ impl YTCreator {
     // For example, sort_by(field_name="subscriber_count")
     // Inplace operation
 
-    fn helper_sort(&self, field: &Vec<String>, is_bool: bool) -> YTCreator {
+    fn helper_sort(&self, field: &[String], is_bool: bool) -> (YTCreator, Vec<usize>) {
         let mut new_yt_creator: YTCreator = YTCreator::default();
         // let's create a mapping =>
         // {0 : field[...], 1: field[...], ...}
@@ -159,18 +166,30 @@ impl YTCreator {
             }
             new_yt_creator.set_field(field_name, new_data_field);
         }
-        new_yt_creator
+        let mut new_indices = Vec::<usize>::new();
+        for tuple_ in count_vec.iter() {
+            let idx = tuple_.0;
+            new_indices.push(*idx as usize);
+        }
+        println!("new indices: {:?}", new_indices);
+        println!("before it looked like: {:?}", self.is_live_status);
+        (new_yt_creator, new_indices)
     }
 
-    pub fn sort_by(&self, field_name: AllowedFieldNamesForSorting) -> Option<YTCreator> {
+    pub fn sort_by(
+        &self,
+        field_name: AllowedFieldNamesForSorting,
+    ) -> Option<(YTCreator, Vec<usize>)> {
         match field_name {
             AllowedFieldNamesForSorting::Subscribers => {
                 let field = self.get_field("subscribers").unwrap();
-                Some(self.helper_sort(field, false))
+                let sort_output = self.helper_sort(field, false);
+                Some(sort_output)
             }
             AllowedFieldNamesForSorting::IsLiveStatus => {
                 let field = self.get_field("is_live_status").unwrap();
-                Some(self.helper_sort(field, true))
+                let sort_output = self.helper_sort(field, true);
+                Some(sort_output)
             }
         }
     }
@@ -214,6 +233,7 @@ pub enum ThemeType {
 #[derive(Debug, Clone)]
 pub enum Message {
     ThemeChanged(ThemeType),
+    SortOptionChanged(AllowedFieldNamesForSorting),
 }
 
 #[derive(Debug)]
@@ -598,9 +618,9 @@ mod test {
     #[test]
     fn test_yt_creator_sort_by_is_live_status() {
         let yt_creator_mock: YTCreator = get_json_data(Some("test_assets/more_data.json"));
-        let new_yt_creator_mock = yt_creator_mock
-            .sort_by(AllowedFieldNamesForSorting::IsLiveStatus)
-            .unwrap();
+        let sorted_tuple_with_indices =
+            yt_creator_mock.sort_by(AllowedFieldNamesForSorting::IsLiveStatus);
+        let new_yt_creator_mock = sorted_tuple_with_indices.unwrap().0;
         assert_eq!(
             new_yt_creator_mock.subscribers,
             ["300", "100", "400", "200"]
@@ -612,7 +632,12 @@ mod test {
         let yt_creator_mock: YTCreator = get_json_data(Some("test_assets/more_data.json"));
         let new_yt_creator_mock = yt_creator_mock
             .sort_by(AllowedFieldNamesForSorting::Subscribers)
-            .unwrap();
+            .unwrap()
+            .0;
+        assert_ne!(
+            new_yt_creator_mock.avatar_links,
+            yt_creator_mock.avatar_links
+        );
         assert_eq!(
             new_yt_creator_mock.subscribers,
             ["400", "300", "200", "100"]
