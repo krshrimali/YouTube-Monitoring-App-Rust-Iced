@@ -215,8 +215,8 @@ impl Sandbox for YTMonitor {
 
         container(column![
             row![
-                content.width(Length::FillPortion(2)),
-                sort_option_content.width(Length::FillPortion(1))
+                content.width(Length::Fill).align_items(iced::Alignment::Start),
+                sort_option_content.width(Length::Fill).align_items(iced::Alignment::End)
             ],
             horizontal_rule(10),
             title_header.height(Length::Shrink),

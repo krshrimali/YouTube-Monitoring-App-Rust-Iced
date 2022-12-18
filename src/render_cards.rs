@@ -122,7 +122,6 @@ impl YTCreator {
         for (idx, val) in field.iter().enumerate() {
             hash_map.insert(idx as i32, val.to_string());
         }
-        // println!("Hash Map at this stage: {:?}", hash_map);
         let mut count_vec: Vec<(&i32, &String)> = hash_map.iter().collect();
         count_vec.sort_by(|a, b| {
             if b.1 == a.1 {
@@ -156,7 +155,6 @@ impl YTCreator {
                 }
             }
         });
-        // println!("After sorting: {:?}", count_vec);
         for field_name in YTCreator::field_names() {
             let data_field = self.get_field(field_name).unwrap();
             let mut new_data_field = Vec::<String>::new();
@@ -171,8 +169,6 @@ impl YTCreator {
             let idx = tuple_.0;
             new_indices.push(*idx as usize);
         }
-        println!("new indices: {:?}", new_indices);
-        println!("before it looked like: {:?}", self.is_live_status);
         (new_yt_creator, new_indices)
     }
 
