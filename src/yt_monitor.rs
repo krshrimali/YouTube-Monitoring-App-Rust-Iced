@@ -1,15 +1,18 @@
 use iced::theme::{self, Theme};
 use iced::widget::{column, container, horizontal_rule, image, radio, row, text};
 use iced::{Color, Length, Renderer, Sandbox};
+
+use self::render_cards::AllowedFieldNamesForSorting;
 #[path = "render_cards.rs"]
 mod render_cards;
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct YTMonitor {
     theme: Theme,
     json_obj: render_cards::YTCreator,
     loaded_photos: Vec<image::Handle>,
     live_status: Vec<bool>,
+    sort_option: AllowedFieldNamesForSorting,
 }
 
 // TODO: Make two separable users for female and males
@@ -34,19 +37,55 @@ fn default_img_handle(total_count: usize) -> Vec<image::Handle> {
     default_handles
 }
 
+// Reference: https://stackoverflow.com/a/69774341
+pub fn rearrange_with_indices<T>(field: &mut Vec<T>, mut sorted_indices: Vec<usize>) {
+    for idx in 0..field.len() {
+        if sorted_indices[idx] != idx {
+            let mut current_idx = idx;
+            loop {
+                let target_idx = sorted_indices[current_idx];
+                sorted_indices[current_idx] = current_idx;
+                if sorted_indices[target_idx] == target_idx {
+                    break;
+                }
+                field.swap(current_idx, target_idx);
+                current_idx = target_idx;
+            }
+        }
+    }
+}
+
+pub fn update_json_obj(obj: &mut YTMonitor, old_option: &AllowedFieldNamesForSorting) {
+    // Don't do any reordering if the same option is chosen again...
+    if old_option == &obj.sort_option {
+        return;
+    }
+    let sorted_json_obj_with_indices = obj.json_obj.sort_by(obj.sort_option).unwrap();
+    let sorted_json_obj = sorted_json_obj_with_indices.0;
+    obj.json_obj = sorted_json_obj;
+    let sorted_indices = sorted_json_obj_with_indices.1;
+    rearrange_with_indices::<bool>(&mut obj.live_status, sorted_indices.clone());
+    rearrange_with_indices::<iced_native::image::Handle>(&mut obj.loaded_photos, sorted_indices);
+}
+
 impl Sandbox for YTMonitor {
     type Message = render_cards::Message;
 
     fn new() -> YTMonitor {
         let json_obj = render_cards::get_json_data(None);
-        let image_handles = render_cards::get_all_avatars(&json_obj);
-        let statuses = render_cards::get_live_status(json_obj.get_field("is_live_status"));
+        let sorted_json_obj = json_obj
+            .sort_by(render_cards::AllowedFieldNamesForSorting::default())
+            .unwrap()
+            .0;
+        let image_handles = render_cards::get_all_avatars(&sorted_json_obj);
+        let statuses = render_cards::get_live_status(sorted_json_obj.get_field("is_live_status"));
         // Because dark as default is cool :D
         YTMonitor {
             theme: Theme::Dark,
-            json_obj,
+            json_obj: sorted_json_obj,
             loaded_photos: image_handles,
             live_status: statuses,
+            sort_option: AllowedFieldNamesForSorting::Subscribers,
         }
     }
 
@@ -68,6 +107,18 @@ impl Sandbox for YTMonitor {
                         danger: Color::from_rgb(1.0, 0.0, 0.0),
                     }),
                 }
+            }
+            render_cards::Message::SortOptionChanged(sort_option) => {
+                let old_option = self.sort_option;
+                self.sort_option = match sort_option {
+                    AllowedFieldNamesForSorting::IsLiveStatus => {
+                        AllowedFieldNamesForSorting::IsLiveStatus
+                    }
+                    AllowedFieldNamesForSorting::Subscribers => {
+                        AllowedFieldNamesForSorting::Subscribers
+                    }
+                };
+                update_json_obj(self, &old_option);
             }
         }
     }
@@ -95,7 +146,31 @@ impl Sandbox for YTMonitor {
             },
         );
 
+        let choose_sort_by_option = [
+            render_cards::AllowedFieldNamesForSorting::Subscribers,
+            render_cards::AllowedFieldNamesForSorting::IsLiveStatus,
+        ]
+        .iter()
+        .fold(
+            row![text("Sort by:")].spacing(10),
+            |column: iced_native::widget::row::Row<'_, render_cards::Message, Renderer>,
+             sort_by_option| {
+                column.push(radio(
+                    format!("{:?}", sort_by_option),
+                    *sort_by_option,
+                    Some(self.sort_option),
+                    render_cards::Message::SortOptionChanged,
+                ))
+            },
+        );
+
         let content = column![choose_theme]
+            .spacing(20)
+            .padding(20)
+            .max_width(600)
+            .width(Length::Fill);
+
+        let sort_option_content = column![choose_sort_by_option]
             .spacing(20)
             .padding(20)
             .max_width(600)
@@ -138,18 +213,24 @@ impl Sandbox for YTMonitor {
             &all_status,
         );
 
-        container(
+        container(column![
+            row![
+                content.width(Length::Fill).align_items(iced::Alignment::Start),
+                sort_option_content.width(Length::Fill).align_items(iced::Alignment::End)
+            ],
+            horizontal_rule(10),
+            title_header.height(Length::Shrink),
+            horizontal_rule(10),
             column![
-                content,
-                horizontal_rule(10),
-                title_header.height(Length::Shrink),
-                horizontal_rule(10),
-                column![first_row.height(Length::Fill), second_row.height(Length::Fill), third_row.height(Length::Fill)].height(Length::Fill),
-                horizontal_rule(10),
-                footer.height(Length::Shrink),
-                horizontal_rule(10),
+                first_row.height(Length::Fill),
+                second_row.height(Length::Fill),
+                third_row.height(Length::Fill)
             ]
-        )
+            .height(Length::Fill),
+            horizontal_rule(10),
+            footer.height(Length::Shrink),
+            horizontal_rule(10),
+        ])
         .height(Length::Shrink)
         .into()
     }

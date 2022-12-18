@@ -4,6 +4,7 @@ use iced::widget::{column, container, image, row, text, Column, Container, Row};
 use iced::{Length, Renderer};
 use iced_core::Color;
 use serde::Deserialize;
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::BufReader;
 
@@ -17,7 +18,7 @@ macro_rules! get_struct_names {
     (
         #[derive($($derive_name:ident),*)]
         pub struct $name:ident {
-            $($fname:ident : $ftype:ty), *
+            $(pub $fname:ident : $ftype:ty), *
         }
     ) => {
         #[derive($($derive_name),*)]
@@ -39,27 +40,22 @@ macro_rules! get_struct_names {
                 }
             }
 
-            // Just keeping it here for later to answer: why I created macro for this...
-            // fn slice_to(&self, count_items: usize) -> YTCreator {
-            //     let mut new_obj = YTCreator {
-            //         names: Vec::new(),
-            //         avatar_links: Vec::new(),
-            //         descriptions: Vec::new(),
-            //         is_live_status: Vec::new(),
-            //         subscribers: Vec::new(),
-            //     };
-            //     new_obj.names = self.names.get(0..count_items).unwrap().to_vec();
-            //     new_obj.avatar_links = self.avatar_links.get(0..count_items).unwrap().to_vec();
-            //     new_obj.descriptions = self.descriptions.get(0..count_items).unwrap().to_vec();
-            //     new_obj.is_live_status = self.is_live_status.get(0..count_items).unwrap().to_vec();
-            //     new_obj.subscribers = self.subscribers.get(0..count_items).unwrap().to_vec();
-            //     new_obj
-            // }
             fn slice_to(&self, count_items: usize) -> YTCreator {
                 YTCreator {
                     $($fname: self.$fname.get(0..count_items).expect(&format!("Not enough elements to be sliced into, maybe check the input {count_items} again.")).to_vec()),
                     *
                 }
+            }
+
+            fn set_field(&mut self, field_name: &str, field_data: Vec<String>) -> &mut YTCreator {
+                match field_name {
+                    $(stringify!($fname) => {
+                        self.$fname = field_data
+                    }),
+                    *,
+                    &_ => ()
+                };
+                self
             }
         }
     }
@@ -68,11 +64,23 @@ macro_rules! get_struct_names {
 get_struct_names! {
     #[derive(Deserialize, Debug, Default, Clone, PartialEq, Eq)]
     pub struct YTCreator {
-        names: Vec<String>,
-        avatar_links: Vec<String>,
-        descriptions: Vec<String>,
-        is_live_status: Vec<String>,
-        subscribers: Vec<String>
+        pub names: Vec<String>,
+        pub avatar_links: Vec<String>,
+        pub descriptions: Vec<String>,
+        pub is_live_status: Vec<String>,
+        pub subscribers: Vec<String>
+    }
+}
+
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+pub enum AllowedFieldNamesForSorting {
+    Subscribers,
+    IsLiveStatus,
+}
+
+impl Default for AllowedFieldNamesForSorting {
+    fn default() -> Self {
+        AllowedFieldNamesForSorting::Subscribers
     }
 }
 
@@ -84,11 +92,9 @@ impl YTCreator {
             let len_field: usize = self.get_field(field_name).unwrap().len();
             lengths_all.push(len_field);
             if len_field > MAX_EXPECTED_ITEMS {
-                let msg = format!(
-                    "Found: {} but got {} for the given field_name: {}\n",
-                    len_field, MAX_EXPECTED_ITEMS, field_name
-                );
-                msges += &msg;
+                msges += format!(
+                    "Found: {len_field} but got {MAX_EXPECTED_ITEMS} for the given field_name: {field_name}\n"
+                ).as_str();
             };
         }
 
@@ -102,6 +108,86 @@ impl YTCreator {
             "Not all fields have equal length. Check the input data again."
         );
         self.names.len()
+    }
+
+    // Implement sort_by(field_name="")
+    // For example, sort_by(field_name="subscriber_count")
+    // Inplace operation
+
+    fn helper_sort(&self, field: &[String], is_bool: bool) -> (YTCreator, Vec<usize>) {
+        let mut new_yt_creator: YTCreator = YTCreator::default();
+        // let's create a mapping =>
+        // {0 : field[...], 1: field[...], ...}
+        let mut hash_map: HashMap<i32, String> = HashMap::new();
+        for (idx, val) in field.iter().enumerate() {
+            hash_map.insert(idx as i32, val.to_string());
+        }
+        let mut count_vec: Vec<(&i32, &String)> = hash_map.iter().collect();
+        count_vec.sort_by(|a, b| {
+            if b.1 == a.1 {
+                let b_32: i32 = self
+                    .subscribers
+                    .get(*b.0 as usize)
+                    .unwrap()
+                    .parse()
+                    .ok()
+                    .unwrap();
+                let a_32: i32 = self
+                    .subscribers
+                    .get(*a.0 as usize)
+                    .unwrap()
+                    .parse()
+                    .ok()
+                    .unwrap();
+                b_32.cmp(&a_32)
+            } else {
+                match is_bool {
+                    true => {
+                        let b_bool: bool = b.1.parse().ok().unwrap();
+                        let a_bool: bool = a.1.parse().ok().unwrap();
+                        b_bool.cmp(&a_bool)
+                    }
+                    false => {
+                        let b_32: i32 = b.1.parse().ok().unwrap();
+                        let a_32: i32 = a.1.parse().ok().unwrap();
+                        b_32.cmp(&a_32)
+                    }
+                }
+            }
+        });
+        for field_name in YTCreator::field_names() {
+            let data_field = self.get_field(field_name).unwrap();
+            let mut new_data_field = Vec::<String>::new();
+            for tuple_ in count_vec.iter() {
+                let idx = tuple_.0;
+                new_data_field.push(data_field.get(*idx as usize).unwrap().to_string());
+            }
+            new_yt_creator.set_field(field_name, new_data_field);
+        }
+        let mut new_indices = Vec::<usize>::new();
+        for tuple_ in count_vec.iter() {
+            let idx = tuple_.0;
+            new_indices.push(*idx as usize);
+        }
+        (new_yt_creator, new_indices)
+    }
+
+    pub fn sort_by(
+        &self,
+        field_name: AllowedFieldNamesForSorting,
+    ) -> Option<(YTCreator, Vec<usize>)> {
+        match field_name {
+            AllowedFieldNamesForSorting::Subscribers => {
+                let field = self.get_field("subscribers").unwrap();
+                let sort_output = self.helper_sort(field, false);
+                Some(sort_output)
+            }
+            AllowedFieldNamesForSorting::IsLiveStatus => {
+                let field = self.get_field("is_live_status").unwrap();
+                let sort_output = self.helper_sort(field, true);
+                Some(sort_output)
+            }
+        }
     }
 }
 
@@ -143,6 +229,7 @@ pub enum ThemeType {
 #[derive(Debug, Clone)]
 pub enum Message {
     ThemeChanged(ThemeType),
+    SortOptionChanged(AllowedFieldNamesForSorting),
 }
 
 #[derive(Debug)]
@@ -293,15 +380,6 @@ pub fn create_row(
 
 pub fn profile_pic<'a>(width: u16, img_handle: image::Handle) -> Container<'a, Message> {
     container(
-        // Keeping this here for the record on how to use image paths
-        // if cfg!(target_arch = "wasm32") {
-        //     image("path")
-        // } else {
-        //     image(format!(
-        //         "path",
-        //         env!("CARGO_MANIFEST_DIR")
-        //     ))
-        // }
         image(img_handle)
             .height(Length::Units(width))
             .width(Length::Units(width)),
@@ -518,5 +596,47 @@ mod test {
     fn test_yt_creator_slice_to_on_empty_invalid() {
         let yt_creator_mock: YTCreator = get_json_data(Some("test_assets/empty_data.json"));
         assert_eq!(yt_creator_mock.slice_to(2).size(), 0);
+    }
+
+    #[test]
+    fn test_yt_creator_set_field() {
+        let mut yt_creator_mock: YTCreator = get_json_data(Some("test_assets/more_data.json"));
+        let new_data: Vec<String> = vec![
+            "0".to_string(),
+            "0".to_string(),
+            "0".to_string(),
+            "0".to_string(),
+        ];
+        yt_creator_mock.set_field("subscribers", new_data);
+        assert_eq!(yt_creator_mock.subscribers, vec!["0", "0", "0", "0"]);
+    }
+
+    #[test]
+    fn test_yt_creator_sort_by_is_live_status() {
+        let yt_creator_mock: YTCreator = get_json_data(Some("test_assets/more_data.json"));
+        let sorted_tuple_with_indices =
+            yt_creator_mock.sort_by(AllowedFieldNamesForSorting::IsLiveStatus);
+        let new_yt_creator_mock = sorted_tuple_with_indices.unwrap().0;
+        assert_eq!(
+            new_yt_creator_mock.subscribers,
+            ["300", "100", "400", "200"]
+        );
+    }
+
+    #[test]
+    fn test_yt_creator_sort_by_subscribers() {
+        let yt_creator_mock: YTCreator = get_json_data(Some("test_assets/more_data.json"));
+        let new_yt_creator_mock = yt_creator_mock
+            .sort_by(AllowedFieldNamesForSorting::Subscribers)
+            .unwrap()
+            .0;
+        assert_ne!(
+            new_yt_creator_mock.avatar_links,
+            yt_creator_mock.avatar_links
+        );
+        assert_eq!(
+            new_yt_creator_mock.subscribers,
+            ["400", "300", "200", "100"]
+        );
     }
 }

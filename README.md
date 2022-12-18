@@ -43,12 +43,20 @@ sudo apt install fontconfig libfontconfig-dev
 
 ## Demo
 
-**DARK Theme**:
+### Dark Theme (Sorted by subscriber count)
 
-<img width="1840" alt="image" src="https://user-images.githubusercontent.com/19997320/207649780-264d6d5f-c294-40ac-9786-31f74b6765f9.png">
+![image](https://user-images.githubusercontent.com/19997320/208287416-3f3bee1b-b934-4dd9-bf3e-bc1ac5bc5019.png)
 
-**LIGHT Theme**:
+### Dark Theme (Sorted by "is_live_status")
 
-<img width="1840" alt="image" src="https://user-images.githubusercontent.com/19997320/207649833-db333d5f-ba9f-409e-a82e-5a1134a8cdb5.png">
+![image](https://user-images.githubusercontent.com/19997320/208287453-3e1566c0-6531-4fcb-8f46-539ffde969cd.png)
+
+### Light Theme (Sorted by subscriber count)
+
+![image](https://user-images.githubusercontent.com/19997320/208287428-84e21a72-b2dd-48e4-81ab-b3e477ca72ab.png)
+
+### Light Theme (Sorted by "is_live_status")
+
+![image](https://user-images.githubusercontent.com/19997320/208287476-fe1b203b-895e-44fe-a5b2-5235653dc57c.png)
 
 **NOTE:** Another version of this project is present [here](https://github.com/krshrimali/youtuber-monitoring-app).
