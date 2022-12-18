@@ -55,16 +55,17 @@ pub fn rearrange_with_indices<T>(field: &mut Vec<T>, mut sorted_indices: Vec<usi
     }
 }
 
-pub fn update_json_obj(obj: &mut YTMonitor) {
-    let json_obj = render_cards::get_json_data(None);
-    let sorted_json_obj_with_indices = json_obj
-        .sort_by(obj.sort_option).unwrap();
+pub fn update_json_obj(obj: &mut YTMonitor, old_option: &AllowedFieldNamesForSorting) {
+    // Don't do any reordering if the same option is chosen again...
+    if old_option == &obj.sort_option {
+        return;
+    }
+    let sorted_json_obj_with_indices = obj.json_obj.sort_by(obj.sort_option).unwrap();
     let sorted_json_obj = sorted_json_obj_with_indices.0;
     obj.json_obj = sorted_json_obj;
-    let mut reversed_indices = sorted_json_obj_with_indices.1;
-    reversed_indices.reverse();
-    rearrange_with_indices::<iced_native::image::Handle>(&mut obj.loaded_photos, reversed_indices);
-    obj.live_status = render_cards::get_live_status(obj.json_obj.get_field("is_live_status"));
+    let sorted_indices = sorted_json_obj_with_indices.1;
+    rearrange_with_indices::<bool>(&mut obj.live_status, sorted_indices.clone());
+    rearrange_with_indices::<iced_native::image::Handle>(&mut obj.loaded_photos, sorted_indices);
 }
 
 impl Sandbox for YTMonitor {
@@ -74,7 +75,8 @@ impl Sandbox for YTMonitor {
         let json_obj = render_cards::get_json_data(None);
         let sorted_json_obj = json_obj
             .sort_by(render_cards::AllowedFieldNamesForSorting::default())
-            .unwrap().0;
+            .unwrap()
+            .0;
         let image_handles = render_cards::get_all_avatars(&sorted_json_obj);
         let statuses = render_cards::get_live_status(sorted_json_obj.get_field("is_live_status"));
         // Because dark as default is cool :D
@@ -107,6 +109,7 @@ impl Sandbox for YTMonitor {
                 }
             }
             render_cards::Message::SortOptionChanged(sort_option) => {
+                let old_option = self.sort_option;
                 self.sort_option = match sort_option {
                     AllowedFieldNamesForSorting::IsLiveStatus => {
                         AllowedFieldNamesForSorting::IsLiveStatus
@@ -115,7 +118,7 @@ impl Sandbox for YTMonitor {
                         AllowedFieldNamesForSorting::Subscribers
                     }
                 };
-                update_json_obj(self);
+                update_json_obj(self, &old_option);
             }
         }
     }
@@ -211,7 +214,10 @@ impl Sandbox for YTMonitor {
         );
 
         container(column![
-            row![content.width(Length::FillPortion(2)), sort_option_content.width(Length::FillPortion(1))],
+            row![
+                content.width(Length::FillPortion(2)),
+                sort_option_content.width(Length::FillPortion(1))
+            ],
             horizontal_rule(10),
             title_header.height(Length::Shrink),
             horizontal_rule(10),
