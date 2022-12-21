@@ -45,7 +45,7 @@ sudo apt install fontconfig libfontconfig-dev
 
 ### Dark Theme (Sorted by subscriber count)
 
-![image](https://user-images.githubusercontent.com/19997320/208287416-3f3bee1b-b934-4dd9-bf3e-bc1ac5bc5019.png)
+<img width="1712" alt="image" src="https://user-images.githubusercontent.com/19997320/208976047-7dfa0dc0-d83f-418a-ac70-4bb74bb5e03b.png">
 
 ### Dark Theme (Sorted by "is_live_status")
 
