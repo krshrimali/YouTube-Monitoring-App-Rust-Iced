@@ -13,3 +13,6 @@ itertools = "*"
 serde_json = "*"
 reqwest = { version = "*", features = ["blocking"] }
 serde = { version = "*", features = ["derive"] }
+google-youtube3 = "*"
+tokio = {version="*", features=["rt-multi-thread"]}
+yup-oauth2 = "*"
