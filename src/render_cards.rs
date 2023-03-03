@@ -381,8 +381,8 @@ pub fn create_row(
 pub fn profile_pic<'a>(width: u16, img_handle: image::Handle) -> Container<'a, Message> {
     container(
         image(img_handle)
-            .height(Length::Units(width))
-            .width(Length::Units(width)),
+            .height(Length::Fixed(width.into()))
+            .width(Length::Fixed(width.into())),
     )
     .width(Length::Fill)
     .center_x()
